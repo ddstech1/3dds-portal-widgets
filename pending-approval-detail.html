@@ -186,13 +186,13 @@
             <h4>Please describe the changes needed:</h4>
             <textarea class="changes-textarea" id="change-notes" placeholder="Please be as detailed as possible — include tooth numbers, shade adjustments, fit concerns, or any other specific modifications needed..."></textarea>
 
-            <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
-              <div style="font-size:24px;">📎</div>
-              <strong style="font-size:13px;">Attach photos or files (optional)</strong>
-              <p>Click to upload or drag & drop — files go directly to your case folder</p>
+            <div style="margin-top:12px;">
+              <button onclick="openUpload()" id="upload-btn" style="background:#e8f0fb;color:#1e3a5f;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;width:100%;">
+                📎 Upload Photos or Files to Case Folder
+              </button>
+              <div id="upload-loading" style="display:none;font-size:12px;color:#888;margin-top:8px;text-align:center;">Getting upload link...</div>
+              <div id="upload-error" style="display:none;font-size:12px;color:#dc2626;margin-top:8px;"></div>
             </div>
-            <input type="file" id="file-input" multiple onchange="handleFileUpload(this.files)"/>
-            <div class="upload-status" id="upload-status"></div>
           </div>
 
           <button class="submit-btn" id="submit-btn" onclick="submitDecision()" disabled>
@@ -474,15 +474,30 @@
     });
   }
 
-  function handleFileUpload(files) {
-    if(!files || files.length === 0) return;
-    var status = document.getElementById("upload-status");
-    status.className = "upload-status";
-    status.textContent = "Uploading " + files.length + " file(s)...";
-    setTimeout(function() {
-      status.className = "upload-status success";
-      status.textContent = "✓ Upload feature coming soon — WorkDrive function in progress.";
-    }, 1000);
+  function openUpload() {
+    document.getElementById("upload-loading").style.display = "block";
+    document.getElementById("upload-btn").style.display = "none";
+    ZOHO.CREATOR.DATA.invokeCustomApi({
+      appName: "doctor-portal",
+      apiName: "Get_Collect_Files_Link",
+      httpMethod: "GET",
+      params: { salesorder_id: SALESORDER_ID }
+    }).then(function(response) {
+      var raw = response && response.result ? response.result : null;
+      var result;
+      try { result = JSON.parse(raw); } catch(e) { result = { success: "false" }; }
+      document.getElementById("upload-loading").style.display = "none";
+      document.getElementById("upload-btn").style.display = "block";
+      if(result.success === "true" && result.collect_url) {
+        window.open(result.collect_url, "_blank");
+      } else {
+        document.getElementById("upload-error").textContent = result.error || "Unable to get upload link.";
+        document.getElementById("upload-error").style.display = "block";
+      }
+    }).catch(function() {
+      document.getElementById("upload-loading").style.display = "none";
+      document.getElementById("upload-btn").style.display = "block";
+    });
   }
 
   function goBack() {
