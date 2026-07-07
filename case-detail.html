@@ -188,13 +188,12 @@
     <div class="card">
       <div class="card-header">📎 Upload Files</div>
       <div class="card-body">
-        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
-          <div class="icon">📁</div>
-          <strong>Click to upload or drag & drop</strong>
-          <p>Files will be saved to this order's WorkDrive folder</p>
-        </div>
-        <input type="file" id="file-input" multiple onchange="handleFileUpload(this.files)"/>
-        <div class="upload-status" id="upload-status"></div>
+        <p style="color:var(--text-mid);font-size:13px;margin-bottom:14px;">Upload files directly to your case folder in WorkDrive — supports all file types including STL, OBJ, 3MF, photos and videos.</p>
+        <button class="folder-link" id="upload-btn" onclick="openUpload()" style="border:none;cursor:pointer;">
+          📎 Upload Files to Case Folder
+        </button>
+        <div id="upload-loading" style="display:none;font-size:13px;color:var(--text-light);margin-top:10px;">Getting upload link...</div>
+        <div id="upload-error" style="display:none;font-size:13px;color:var(--red);margin-top:10px;"></div>
       </div>
     </div>
 
@@ -218,6 +217,25 @@
         <a id="invoice-link" class="folder-link" href="#" target="_blank">
           🧾 View Invoice PDF
         </a>
+      </div>
+    </div>
+
+    <!-- Remake Request (Account Holder only, Completed cases, returnable items, within 60 days) -->
+    <div class="card" id="remake-card" style="display:none;">
+      <div class="card-header">🔄 Request Remake</div>
+      <div class="card-body">
+        <p style="color:var(--text-mid);font-size:13px;margin-bottom:14px;">If you are not satisfied with this case, you may request a remake within 60 days of the invoice date. Please describe the issue below.</p>
+        <div id="remake-form">
+          <textarea id="remake-reason" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;resize:vertical;min-height:80px;font-family:inherit;margin-bottom:12px;" placeholder="Please describe the reason for the remake request..."></textarea>
+          <button onclick="submitRemake()" id="remake-btn" style="background:#dc2626;color:white;border:none;padding:11px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;width:100%;">
+            🔄 Submit Remake Request
+          </button>
+        </div>
+        <div id="remake-success" style="display:none;text-align:center;padding:20px;">
+          <div style="font-size:36px;margin-bottom:10px;">✅</div>
+          <h3 style="color:var(--green);margin-bottom:6px;">Remake Request Submitted</h3>
+          <p style="font-size:13px;color:var(--text-mid);">Our team has been notified and will be in touch shortly.</p>
+        </div>
       </div>
     </div>
 
@@ -347,6 +365,17 @@
       document.getElementById("invoice-link").href = data.invoice_pdf;
     }
 
+    // Remake button — Account Holder only, Completed, has returnable items, within 60 days
+    if(data.case_status === "Completed" && data.has_returnable_items === "true" && window.PORTAL_ROLE === "Account Holder" && data.invoice_date && data.invoice_date !== "") {
+      var invoiceParts = data.invoice_date.split("-");
+      var invoiceDate = new Date(parseInt(invoiceParts[0]), parseInt(invoiceParts[1])-1, parseInt(invoiceParts[2]));
+      var today = new Date();
+      var diffDays = Math.floor((today - invoiceDate) / (1000 * 60 * 60 * 24));
+      if(diffDays <= 60) {
+        document.getElementById("remake-card").style.display = "block";
+      }
+    }
+
     // Show page
     document.getElementById("loading").style.display = "none";
     document.getElementById("main-content").style.display = "block";
@@ -443,6 +472,78 @@
       status.className = "upload-status success";
       status.textContent = "✓ Upload feature coming soon — WorkDrive function in progress.";
     }, 1000);
+  }
+
+  function openUpload() {
+    document.getElementById("upload-loading").style.display = "block";
+    document.getElementById("upload-btn").style.display = "none";
+    document.getElementById("upload-error").style.display = "none";
+
+    ZOHO.CREATOR.DATA.invokeCustomApi({
+      appName: "doctor-portal",
+      apiName: "Get_Collect_Files_Link",
+      httpMethod: "GET",
+      params: { salesorder_id: SALESORDER_ID }
+    }).then(function(response) {
+      var raw = response && response.result ? response.result : null;
+      var result;
+      try { result = JSON.parse(raw); } catch(e) { result = { success: "false" }; }
+
+      document.getElementById("upload-loading").style.display = "none";
+      document.getElementById("upload-btn").style.display = "inline-flex";
+
+      if(result.success === "true" && result.collect_url) {
+        window.open(result.collect_url, "_blank");
+      } else {
+        var err = document.getElementById("upload-error");
+        err.textContent = result.error || "Unable to get upload link. Please try again.";
+        err.style.display = "block";
+      }
+    }).catch(function() {
+      document.getElementById("upload-loading").style.display = "none";
+      document.getElementById("upload-btn").style.display = "inline-flex";
+      document.getElementById("upload-error").textContent = "Error getting upload link.";
+      document.getElementById("upload-error").style.display = "block";
+    });
+  }
+
+  function submitRemake() {
+    var reason = document.getElementById("remake-reason").value.trim();
+    if(!reason) { alert("Please describe the reason for the remake request."); return; }
+
+    var btn = document.getElementById("remake-btn");
+    btn.disabled = true;
+    btn.textContent = "Submitting...";
+
+    ZOHO.CREATOR.DATA.invokeCustomApi({
+      appName: "doctor-portal",
+      apiName: "Create_Remake_Ticket",
+      httpMethod: "POST",
+      body: {
+        salesorder_id: SALESORDER_ID,
+        reason: reason,
+        doctor_email: CASE_DATA.customer_email || "",
+        patient_name: CASE_DATA.patient_name || "",
+        so_number: CASE_DATA.salesorder_number || ""
+      }
+    }).then(function(response) {
+      var raw = response && response.result ? response.result : null;
+      var result;
+      try { result = JSON.parse(raw); } catch(e) { result = { success: "false" }; }
+
+      if(result.success === "true") {
+        document.getElementById("remake-form").style.display = "none";
+        document.getElementById("remake-success").style.display = "block";
+      } else {
+        alert("Error: " + (result.error || "Unknown error. Please try again."));
+        btn.disabled = false;
+        btn.textContent = "🔄 Submit Remake Request";
+      }
+    }).catch(function(err) {
+      alert("Error: " + JSON.stringify(err));
+      btn.disabled = false;
+      btn.textContent = "🔄 Submit Remake Request";
+    });
   }
 
   function goBack() {
