@@ -32,6 +32,16 @@
     .tab.shipped .badge { background: #d1fae5; color: #065f46; }
     .tab.completed .badge { background: #e8f0fb; color: #1e3a5f; }
 
+    /* Alert dot */
+    .alert-dot { width: 8px; height: 8px; border-radius: 50%; display: none; flex-shrink: 0; }
+    .alert-dot.visible { display: inline-block; }
+    .alert-dot.amber { background: #d97706; animation: pulse-dot 1.5s infinite; }
+    .alert-dot.orange { background: #ea580c; animation: pulse-dot 1.5s infinite; }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
     /* Tab content */
     .tab-content { display: none; padding: 16px 20px; }
     .tab-content.active { display: block; }
@@ -80,8 +90,8 @@
   <!-- Tabs -->
   <div class="tabs">
     <div class="tab active" onclick="switchTab('active')">Active <span class="badge" id="badge-active">—</span></div>
-    <div class="tab pending" onclick="switchTab('pending')">Pending Dr. Approval <span class="badge" id="badge-pending">—</span></div>
-    <div class="tab onhold" onclick="switchTab('onhold')">On Hold <span class="badge" id="badge-onhold">—</span></div>
+    <div class="tab pending" onclick="switchTab('pending')"><span class="alert-dot amber" id="dot-pending"></span>Pending Dr. Approval <span class="badge" id="badge-pending">—</span></div>
+    <div class="tab onhold" onclick="switchTab('onhold')"><span class="alert-dot orange" id="dot-onhold"></span>On Hold <span class="badge" id="badge-onhold">—</span></div>
     <div class="tab shipped" onclick="switchTab('shipped')">Shipped <span class="badge" id="badge-shipped">—</span></div>
     <div class="tab completed" onclick="switchTab('completed')">Completed <span class="badge" id="badge-completed">—</span></div>
   </div>
@@ -157,6 +167,9 @@
   ZOHO.CREATOR.init().then(function() {
     loadTab("active");
     loadPortalUserInfo();
+    // Load pending and onhold in background so alert dots appear immediately
+    setTimeout(function() { loadTab("pending"); }, 500);
+    setTimeout(function() { loadTab("onhold"); }, 1000);
   });
 
   function loadPortalUserInfo() {
@@ -213,8 +226,15 @@
       LOADED[tab] = true;
       ALL_ROWS[tab] = rows || [];
 
-      // Update badge
-      document.getElementById("badge-" + tab).textContent = rows ? rows.length : 0;
+      // Update badge count
+      var count = rows ? rows.length : 0;
+      document.getElementById("badge-" + tab).textContent = count;
+
+      // Show pulsing alert dot for pending and onhold when count > 0
+      if(tab === "pending" || tab === "onhold") {
+        var dot = document.getElementById("dot-" + tab);
+        if(dot) dot.className = "alert-dot " + (tab === "pending" ? "amber" : "orange") + (count > 0 ? " visible" : "");
+      }
 
       if(!rows || rows.length === 0) {
         document.getElementById("empty-" + tab).style.display = "block";
