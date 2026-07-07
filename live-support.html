@@ -147,7 +147,19 @@
     }
     .chat-btn:hover { background: #1d4ed8; }
 
-    /* Phone option */
+    /* Assist widget */
+    .assist-card {
+      background: var(--white);
+      border-radius: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      padding: 20px;
+      margin-top: 0;
+    }
+    .assist-card h2 { font-size: 15px; font-weight: 700; color: var(--brand-blue); margin-bottom: 6px; }
+    .assist-card p { font-size: 13px; color: var(--text-mid); margin-bottom: 14px; }
+    .assist-wrap { position: relative; width: 100%; height: 115px; overflow: hidden; border-radius: 8px; border: 1px solid var(--border); }
+    .assist-wrap iframe { width: 100%; height: 150px; border: none; }
+    .assist-mask { position: absolute; bottom: 0; left: 0; right: 0; height: 32px; background: white; }
     .divider {
       display: flex;
       align-items: center;
@@ -254,6 +266,16 @@
       <div class="phone-option">
         <span>📞 Call us at</span>
         <a href="tel:+18553550533">(855) 355-0533</a>
+      </div>
+    </div>
+
+    <!-- Remote Support Session -->
+    <div class="assist-card">
+      <h2>🖥️ Remote Support Session</h2>
+      <p>If you have been provided a Support Session ID by a 3D DDS technician, enter it below to start your remote support session.</p>
+      <div class="assist-wrap">
+        <iframe src="https://assist.3ddds.net/login/embed-remote-support.jsp"></iframe>
+        <div class="assist-mask"></div>
       </div>
     </div>
 
