@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pending Dr. Approval</title>
+  <script src="https://js.zohostatic.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f7fa; }
+    .page-header { background: #1e3a5f; padding: 14px 20px; display: flex; align-items: center; gap: 14px; }
+    .page-header img { height: 36px; width: auto; }
+    .page-header h2 { color: white; font-size: 18px; font-weight: 600; }
+    .table-wrap { padding: 20px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    thead tr { background: #1e3a5f; color: #fff; }
+    thead th { padding: 12px 16px; text-align: left; font-size: 13px; font-weight: 600; letter-spacing: 0.03em; }
+    tbody tr { border-bottom: 1px solid #eef0f3; cursor: pointer; transition: background 0.15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f0f4ff; }
+    tbody td { padding: 12px 16px; font-size: 14px; color: #333; }
+    .so-link { color: #2563eb; font-weight: 600; }
+    .patient-link { color: #2563eb; }
+    .status-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; background: #fef3c7; color: #92400e; }
+    .no-date { color: #aaa; font-style: italic; }
+    #loading { text-align: center; padding: 40px; color: #888; font-size: 14px; }
+    #error { text-align: center; padding: 40px; color: #dc2626; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="page-header">
+    <img src="https://3ddds.net/wp-content/uploads/2026/02/site-logo-sm.png" alt="3D DDS Logo" />
+    <h2>Pending Dr. Approval</h2>
+  </div>
+  <div class="table-wrap">
+    <div id="loading">Loading cases...</div>
+    <table id="cases-table" style="display:none;">
+      <thead>
+        <tr>
+          <th>Order Date</th>
+          <th>SO #</th>
+          <th>Patient Name</th>
+          <th>Expected Ship Date</th>
+          
+        </tr>
+      </thead>
+      <tbody id="cases-body"></tbody>
+    </table>
+    <div id="error" style="display:none;"></div>
+  </div>
+  <script>
+    ZOHO.CREATOR.init().then(function () {
+      ZOHO.CREATOR.DATA.invokeCustomApi({
+        appName: "doctor-portal",
+        apiName: "Get_Pending_Approval_Cases",
+        httpMethod: "GET"
+      }).then(function (response) {
+        document.getElementById("loading").style.display = "none";
+        var raw = response && response.result ? response.result : null;
+        if (!raw) { showError("No data returned."); return; }
+        var rows;
+        try { rows = JSON.parse(raw); } catch(e) { showError("Parse error: " + e.message); return; }
+        if (!rows || rows.length === 0) { showError("No cases found."); return; }
+        var body = document.getElementById("cases-body");
+        rows.forEach(function (row) {
+          var tr = document.createElement("tr");
+          tr.innerHTML =
+            '<td>' + formatDate(row.order_date) + '</td>' +
+            '<td><span class="so-link">' + row.salesorder_number + '</span></td>' +
+            '<td><span class="patient-link">' + row.patient_name + '</span></td>' +
+            '<td>' + (row.expected_ship_date ? formatDate(row.expected_ship_date) : '<span class="no-date">Not set</span>') + '</td>' +
+            '';
+          tr.addEventListener("click", function () {
+            ZOHO.CREATOR.UTIL.navigateParentURL(
+              "/doctor-portal/Case_Detail#salesorder_id=" + row.salesorder_id +
+              "&so_number=" + encodeURIComponent(row.salesorder_number) +
+              "&patient=" + encodeURIComponent(row.patient_name)
+            );
+          });
+          body.appendChild(tr);
+        });
+        document.getElementById("cases-table").style.display = "table";
+      }).catch(function (err) {
+        document.getElementById("loading").style.display = "none";
+        showError("API error: " + JSON.stringify(err));
+      });
+    });
+    function formatDate(d) {
+      if (!d) return '<span class="no-date">—</span>';
+      var parts = d.split("-");
+      if (parts.length !== 3) return d;
+      var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+      return months[parseInt(parts[1],10)-1] + " " + parts[2] + ", " + parts[0];
+    }
+    function showError(msg) {
+      var el = document.getElementById("error");
+      el.textContent = msg;
+      el.style.display = "block";
+    }
+  </script>
+</body>
+</html>

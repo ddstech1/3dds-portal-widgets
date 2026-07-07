@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Live Support</title>
+  <style>
+    :root {
+      --brand-blue: #1e3a5f;
+      --brand-light: #e8f0fb;
+      --brand-accent: #2563eb;
+      --text-dark: #1a1a2e;
+      --text-mid: #555;
+      --text-light: #888;
+      --border: #e0e4ed;
+      --bg: #f5f7fa;
+      --white: #ffffff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text-dark);
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .page-header {
+      background: var(--brand-blue);
+      color: white;
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .header-icon {
+      width: 44px;
+      height: 44px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+    .header-text h1 { font-size: 20px; font-weight: 700; }
+    .header-text p { font-size: 13px; opacity: 0.8; margin-top: 3px; }
+
+    /* Status indicator */
+    .status-bar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 28px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-mid);
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Main content */
+    .content {
+      padding: 28px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* Info card */
+    .info-card {
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .info-card h2 {
+      font-size: 16px;
+      color: var(--brand-blue);
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .info-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .info-item .icon {
+      font-size: 20px;
+      margin-top: 2px;
+    }
+    .info-item h3 { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+    .info-item p { font-size: 12px; color: var(--text-mid); margin-top: 2px; }
+
+    /* Hours card */
+    .hours-card {
+      background: var(--brand-light);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .hours-card .clock { font-size: 32px; }
+    .hours-card h3 { font-size: 14px; font-weight: 700; color: var(--brand-blue); }
+    .hours-card p { font-size: 13px; color: var(--text-mid); margin-top: 4px; }
+
+    /* Chat prompt */
+    .chat-prompt {
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      padding: 24px;
+      text-align: center;
+    }
+    .chat-prompt h2 { font-size: 16px; color: var(--brand-blue); font-weight: 700; margin-bottom: 8px; }
+    .chat-prompt p { font-size: 13px; color: var(--text-mid); margin-bottom: 20px; }
+    .chat-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--brand-accent);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .chat-btn:hover { background: #1d4ed8; }
+
+    /* Phone option */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+      color: var(--text-light);
+      font-size: 12px;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .phone-option {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-mid);
+    }
+    .phone-option a {
+      color: var(--brand-accent);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .phone-option a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-icon">💬</div>
+    <div class="header-text">
+      <h1>Live Support</h1>
+      <p>Chat with the 3D DDS production team</p>
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <div class="status-dot"></div>
+    <span>Support agents are online</span>
+  </div>
+
+  <div class="content">
+
+    <!-- Info card -->
+    <div class="info-card">
+      <h2>How can we help you?</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="icon">📋</span>
+          <div>
+            <h3>Case Questions</h3>
+            <p>Questions about an active order or production timeline</p>
+          </div>
+        </div>
+        <div class="info-item">
+          <span class="icon">📦</span>
+          <div>
+            <h3>Shipping & Delivery</h3>
+            <p>Tracking information and delivery updates</p>
+          </div>
+        </div>
+        <div class="info-item">
+          <span class="icon">🔧</span>
+          <div>
+            <h3>Technical Support</h3>
+            <p>Help with submitting cases or portal questions</p>
+          </div>
+        </div>
+        <div class="info-item">
+          <span class="icon">🦷</span>
+          <div>
+            <h3>Patient in the Chair</h3>
+            <p>Urgent questions while a patient is in your chair</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hours -->
+    <div class="hours-card">
+      <div class="clock">🕘</div>
+      <div>
+        <h3>Support Hours</h3>
+        <p>Monday – Thursday, 9:00 AM – 5:00 PM Eastern Time</p>
+        <p>Friday, 9:00 AM – 1:00 PM Eastern Time</p>
+        <p style="margin-top:4px;">Outside hours? Leave a message and we'll respond next business day.</p>
+      </div>
+    </div>
+
+    <!-- Chat prompt -->
+    <div class="chat-prompt">
+      <h2>Start a Live Chat</h2>
+      <p>Click below to open the chat window and connect with our team.</p>
+      <button class="chat-btn" onclick="openChat()">
+        💬 Chat with Us
+      </button>
+      <div class="divider">or</div>
+      <div class="phone-option">
+        <span>📞 Call us at</span>
+        <a href="tel:+18553550533">(855) 355-0533</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SalesIQ Widget -->
+  <script>window.$zoho=window.$zoho || {};$zoho.salesiq=$zoho.salesiq||{ready:function(){}}</script>
+  <script id="zsiqscript" src="https://salesiq.zohopublic.com/widget?wc=siq30c58bbf62c9ca61479198e1484fc8236ec6bb92a7e78d25e9884c783740fa76" defer></script>
+
+  <script>
+    function openChat() {
+      // Open SalesIQ chat window programmatically
+      if(window.$zoho && window.$zoho.salesiq) {
+        $zoho.salesiq.floatwindow.visible("show");
+      }
+    }
+
+    // Auto-show chat after 3 seconds if agents are online
+    window.$zoho = window.$zoho || {};
+    $zoho.salesiq = $zoho.salesiq || {ready: function(){}};
+    $zoho.salesiq.ready = function() {
+      // Pre-fill visitor info if available from URL params
+      var params = {};
+      window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
+        params[key] = decodeURIComponent(value);
+      });
+      if(params.name) { $zoho.salesiq.visitor.name(params.name); }
+      if(params.email) { $zoho.salesiq.visitor.email(params.email); }
+    };
+  </script>
+
+</body>
+</html>

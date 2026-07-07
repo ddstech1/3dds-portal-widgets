@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pending Design Approval</title>
+  <script src="https://js.zohostatic.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
+  <style>
+    :root {
+      --brand-blue: #1e3a5f;
+      --brand-light: #e8f0fb;
+      --brand-accent: #2563eb;
+      --text-dark: #1a1a2e;
+      --text-mid: #555;
+      --text-light: #888;
+      --border: #e0e4ed;
+      --bg: #f5f7fa;
+      --white: #ffffff;
+      --green: #059669;
+      --green-light: #d1fae5;
+      --amber: #d97706;
+      --amber-light: #fef3c7;
+      --red: #dc2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text-dark); }
+
+    .page-header { background: var(--brand-blue); padding: 14px 24px; display: flex; align-items: center; gap: 16px; }
+    .page-header img { height: 36px; width: auto; }
+    .back-btn { background: rgba(255,255,255,0.15); border: none; color: white; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .back-btn:hover { background: rgba(255,255,255,0.25); }
+    .header-info h1 { color: white; font-size: 18px; font-weight: 700; }
+    .header-info p { color: rgba(255,255,255,0.8); font-size: 13px; margin-top: 2px; }
+
+    .status-bar { background: var(--white); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; gap: 32px; flex-wrap: wrap; }
+    .status-item label { font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.05em; display: block; }
+    .status-item span { font-size: 14px; font-weight: 600; color: var(--text-dark); }
+    .status-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; background: var(--amber-light); color: var(--amber); }
+
+    .content { padding: 20px 24px; display: grid; gap: 20px; }
+
+    .card { background: var(--white); border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); overflow: hidden; }
+    .card-header { background: var(--brand-blue); color: white; padding: 12px 18px; font-size: 14px; font-weight: 600; }
+    .card-body { padding: 18px; }
+
+    /* Review prompt */
+    .review-prompt { background: var(--amber-light); border: 1px solid #fcd34d; border-radius: 10px; padding: 20px 24px; }
+    .review-prompt h3 { color: var(--amber); font-size: 15px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .review-prompt p { color: #78350f; font-size: 13px; line-height: 1.6; margin-bottom: 14px; }
+    .design-link { display: inline-flex; align-items: center; gap: 8px; background: var(--brand-blue); color: white; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; transition: background 0.2s; }
+    .design-link:hover { background: #2d4f7c; }
+
+    /* Checkboxes */
+    .approval-section { margin-top: 20px; }
+    .approval-section h3 { font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 14px; }
+    .checkbox-group { display: grid; gap: 12px; }
+    .checkbox-option { display: flex; align-items: flex-start; gap: 12px; padding: 16px; border: 2px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.2s; }
+    .checkbox-option:hover { border-color: var(--brand-accent); background: var(--brand-light); }
+    .checkbox-option.selected-accept { border-color: var(--green); background: var(--green-light); }
+    .checkbox-option.selected-changes { border-color: var(--amber); background: var(--amber-light); }
+    .checkbox-option input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; cursor: pointer; accent-color: var(--brand-accent); flex-shrink: 0; }
+    .checkbox-option .option-text h4 { font-size: 14px; font-weight: 600; color: var(--text-dark); }
+    .checkbox-option .option-text p { font-size: 12px; color: var(--text-mid); margin-top: 3px; }
+
+    /* Changes notes section */
+    .changes-section { display: none; margin-top: 16px; padding: 16px; background: var(--amber-light); border: 1px solid #fcd34d; border-radius: 10px; }
+    .changes-section h4 { font-size: 13px; font-weight: 700; color: #78350f; margin-bottom: 10px; }
+    .changes-textarea { width: 100%; padding: 10px 14px; border: 1px solid #fcd34d; border-radius: 8px; font-size: 13px; resize: vertical; font-family: inherit; background: white; min-height: 100px; }
+    .changes-textarea:focus { outline: none; border-color: var(--amber); }
+
+    /* Upload zone */
+    .upload-zone { border: 2px dashed #fcd34d; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; margin-top: 12px; transition: all 0.2s; background: white; }
+    .upload-zone:hover { border-color: var(--amber); background: #fffbeb; }
+    .upload-zone p { color: var(--text-mid); font-size: 12px; margin-top: 6px; }
+    #file-input { display: none; }
+    .upload-status { margin-top: 8px; font-size: 12px; }
+    .upload-status.success { color: var(--green); }
+
+    /* Submit button */
+    .submit-btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px; transition: all 0.2s; }
+    .submit-btn.accept { background: var(--green); color: white; }
+    .submit-btn.accept:hover { background: #047857; }
+    .submit-btn.changes { background: var(--amber); color: white; }
+    .submit-btn.changes:hover { background: #b45309; }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Item table */
+    .item-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .item-table th { text-align: left; padding: 8px 12px; background: var(--brand-light); color: var(--brand-blue); font-weight: 600; font-size: 12px; }
+    .item-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    .item-table tr:last-child td { border-bottom: none; }
+
+    /* Chat */
+    .chat-window { height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 12px; background: #fafbff; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .chat-msg { max-width: 75%; padding: 9px 13px; border-radius: 14px; font-size: 13px; line-height: 1.5; }
+    .chat-msg.doctor { background: var(--brand-accent); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .chat-msg.staff { background: var(--white); border: 1px solid var(--border); color: var(--text-dark); align-self: flex-start; border-bottom-left-radius: 4px; }
+    .chat-msg .meta { font-size: 10px; opacity: 0.7; margin-top: 4px; }
+    .chat-input-row { display: flex; gap: 8px; }
+    .chat-input { flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; resize: none; font-family: inherit; }
+    .chat-input:focus { outline: none; border-color: var(--brand-accent); }
+    .send-btn { background: var(--brand-accent); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; }
+    .send-btn:hover { background: #1d4ed8; }
+
+    /* Success overlay */
+    .success-overlay { display: none; text-align: center; padding: 40px; }
+    .success-overlay .icon { font-size: 48px; margin-bottom: 16px; }
+    .success-overlay h2 { color: var(--green); font-size: 20px; margin-bottom: 8px; }
+    .success-overlay p { color: var(--text-mid); font-size: 14px; margin-bottom: 20px; }
+    .success-overlay button { background: var(--brand-blue); color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
+
+    #loading { text-align: center; padding: 60px; color: var(--text-light); }
+    #error-msg { text-align: center; padding: 40px; color: var(--red); }
+    #main-content { display: none; }
+  </style>
+</head>
+<body>
+
+<div id="loading">Loading case details...</div>
+<div id="error-msg" style="display:none;"></div>
+
+<div id="main-content">
+  <div class="page-header">
+    <img src="https://3ddds.net/wp-content/uploads/2026/02/site-logo-sm.png" alt="3D DDS Logo"/>
+    <button class="back-btn" onclick="goBack()">← My Cases</button>
+    <div class="header-info">
+      <h1 id="h-patient-name">Loading...</h1>
+      <p id="h-so-number"></p>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-item">
+      <label>Order Date</label>
+      <span id="s-order-date">—</span>
+    </div>
+    <div class="status-item">
+      <label>Case Status</label>
+      <span id="s-case-status">—</span>
+    </div>
+    <div class="status-item">
+      <label>Expected Ship Date</label>
+      <span id="s-ship-date">—</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- Review Prompt -->
+    <div class="review-prompt">
+      <h3>⚠️ Design Review Required</h3>
+      <p>Your case design is ready for review. Please click the link below to view the design files prepared for this case. Once reviewed, indicate your approval or request changes using the options below. If requesting changes, please provide detailed notes and attach any relevant photos or files.</p>
+      <a id="design-folder-link" class="design-link" href="#" target="_blank">
+        📂 View Design Files for <span id="link-patient-name"></span>
+      </a>
+      <p id="no-design-folder" style="display:none; color:#92400e; font-size:13px; margin-top:10px;">⚠️ Design folder not yet linked. Please contact 3D DDS support.</p>
+    </div>
+
+    <!-- Approval Checkboxes -->
+    <div class="card">
+      <div class="card-header">✅ Your Decision</div>
+      <div class="card-body">
+        <div id="approval-form">
+          <div class="approval-section">
+            <h3>Please select one of the following:</h3>
+            <div class="checkbox-group">
+              <label class="checkbox-option" id="accept-option" onclick="selectOption('accepted')">
+                <input type="checkbox" id="accept-checkbox"/>
+                <div class="option-text">
+                  <h4>✅ Accept Design</h4>
+                  <p>I approve the design. Please proceed with production.</p>
+                </div>
+              </label>
+              <label class="checkbox-option" id="changes-option" onclick="selectOption('changes_requested')">
+                <input type="checkbox" id="changes-checkbox"/>
+                <div class="option-text">
+                  <h4>✏️ Design Changes Requested</h4>
+                  <p>I would like modifications before proceeding. I will provide details below.</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Changes notes — shown only when changes requested -->
+          <div class="changes-section" id="changes-section">
+            <h4>Please describe the changes needed:</h4>
+            <textarea class="changes-textarea" id="change-notes" placeholder="Please be as detailed as possible — include tooth numbers, shade adjustments, fit concerns, or any other specific modifications needed..."></textarea>
+
+            <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+              <div style="font-size:24px;">📎</div>
+              <strong style="font-size:13px;">Attach photos or files (optional)</strong>
+              <p>Click to upload or drag & drop — files go directly to your case folder</p>
+            </div>
+            <input type="file" id="file-input" multiple onchange="handleFileUpload(this.files)"/>
+            <div class="upload-status" id="upload-status"></div>
+          </div>
+
+          <button class="submit-btn" id="submit-btn" onclick="submitDecision()" disabled>
+            Select an option above to continue
+          </button>
+        </div>
+
+        <!-- Success overlay -->
+        <div class="success-overlay" id="success-overlay">
+          <div class="icon" id="success-icon">✅</div>
+          <h2 id="success-title">Decision Submitted</h2>
+          <p id="success-message">Thank you. Our team has been notified.</p>
+          <button onclick="goBack()">← Return to My Cases</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Item Table -->
+    <div class="card">
+      <div class="card-header">📋 Order Items</div>
+      <div class="card-body" style="padding:0;">
+        <table class="item-table">
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Tooth # / Arch</th>
+              <th>Shade</th>
+              <th>Qty</th>
+              <th>Rate</th>
+            </tr>
+          </thead>
+          <tbody id="item-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Case Notes -->
+    <div class="card">
+      <div class="card-header">💬 Case Notes</div>
+      <div class="card-body">
+        <div class="chat-window" id="chat-window"></div>
+        <div class="chat-input-row">
+          <textarea class="chat-input" id="chat-input" rows="2" placeholder="Type a note..."></textarea>
+          <button class="send-btn" id="send-btn" onclick="sendNote()">Send</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  var SALESORDER_ID = "";
+  var CASE_DATA = {};
+  var SELECTED_ACTION = "";
+
+  ZOHO.CREATOR.init().then(function() {
+    var hash = window.location.hash.replace("#","");
+    var params = {};
+    hash.split("&").forEach(function(p) {
+      var kv = p.split("=");
+      if(kv.length === 2) params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1]);
+    });
+    SALESORDER_ID = params.salesorder_id || "";
+    if(!SALESORDER_ID) { showError("No case selected."); return; }
+    loadCaseDetail();
+  });
+
+  function loadCaseDetail() {
+    ZOHO.CREATOR.DATA.invokeCustomApi({
+      appName: "doctor-portal",
+      apiName: "Get_Case_Detail",
+      httpMethod: "GET",
+      params: { salesorder_id: SALESORDER_ID }
+    }).then(function(response) {
+      var raw = response && response.result ? response.result : null;
+      if(!raw) { showError("No data returned."); return; }
+      var data;
+      try { data = JSON.parse(raw); } catch(e) { showError("Parse error: " + e.message); return; }
+      if(data.success !== "true") { showError("Error: " + data.error); return; }
+      CASE_DATA = data;
+      renderPage(data);
+    }).catch(function(err) { showError("API error: " + JSON.stringify(err)); });
+  }
+
+  function renderPage(data) {
+    document.getElementById("h-patient-name").textContent = data.patient_name || "Unknown Patient";
+    document.getElementById("h-so-number").textContent = data.salesorder_number || "";
+    document.getElementById("link-patient-name").textContent = data.patient_name || "this case";
+    document.getElementById("s-order-date").textContent = formatDate(data.order_date);
+    document.getElementById("s-case-status").innerHTML = '<span class="status-badge">' + (data.case_status || "—") + '</span>';
+    document.getElementById("s-ship-date").textContent = data.expected_ship_date ? formatDate(data.expected_ship_date) : "Not set";
+
+    // Design folder link
+    if(data.doctor_folder_url && data.doctor_folder_url !== "") {
+      document.getElementById("design-folder-link").href = data.doctor_folder_url;
+    } else {
+      document.getElementById("design-folder-link").style.display = "none";
+      document.getElementById("no-design-folder").style.display = "block";
+    }
+
+    // Item table
+    var items = [];
+    try { items = JSON.parse(data.line_items); } catch(e) {}
+    var tbody = document.getElementById("item-table-body");
+    if(items.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="padding:16px;color:#888;text-align:center;">No items found</td></tr>';
+    } else {
+      items.forEach(function(item) {
+        var tr = document.createElement("tr");
+        tr.innerHTML =
+          "<td><strong>" + (item.name || "—") + "</strong></td>" +
+          "<td>" + (item.tooth_arch || "—") + "</td>" +
+          "<td>" + (item.shade || "—") + "</td>" +
+          "<td>" + (item.quantity || "1") + "</td>" +
+          "<td>$" + parseFloat(item.rate || 0).toFixed(2) + "</td>";
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Chat notes
+    renderChat(data.customer_notes || "");
+
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("main-content").style.display = "block";
+
+    // Drag/drop
+    var zone = document.getElementById("upload-zone");
+    zone.addEventListener("dragover", function(e) { e.preventDefault(); });
+    zone.addEventListener("drop", function(e) { e.preventDefault(); handleFileUpload(e.dataTransfer.files); });
+  }
+
+  function selectOption(action) {
+    SELECTED_ACTION = action;
+    var acceptBox = document.getElementById("accept-checkbox");
+    var changesBox = document.getElementById("changes-checkbox");
+    var acceptOption = document.getElementById("accept-option");
+    var changesOption = document.getElementById("changes-option");
+    var changesSection = document.getElementById("changes-section");
+    var submitBtn = document.getElementById("submit-btn");
+
+    if(action === "accepted") {
+      acceptBox.checked = true;
+      changesBox.checked = false;
+      acceptOption.className = "checkbox-option selected-accept";
+      changesOption.className = "checkbox-option";
+      changesSection.style.display = "none";
+      submitBtn.className = "submit-btn accept";
+      submitBtn.textContent = "✅ Confirm Design Acceptance";
+      submitBtn.disabled = false;
+    } else {
+      changesBox.checked = true;
+      acceptBox.checked = false;
+      changesOption.className = "checkbox-option selected-changes";
+      acceptOption.className = "checkbox-option";
+      changesSection.style.display = "block";
+      submitBtn.className = "submit-btn changes";
+      submitBtn.textContent = "✏️ Submit Change Request";
+      submitBtn.disabled = false;
+    }
+  }
+
+  function submitDecision() {
+    if(!SELECTED_ACTION) return;
+
+    var changeNotes = "";
+    if(SELECTED_ACTION === "changes_requested") {
+      changeNotes = document.getElementById("change-notes").value.trim();
+      if(!changeNotes) {
+        alert("Please describe the changes needed before submitting.");
+        return;
+      }
+    }
+
+    var btn = document.getElementById("submit-btn");
+    btn.disabled = true;
+    btn.textContent = "Submitting...";
+
+    ZOHO.CREATOR.DATA.invokeCustomApi({
+      appName: "doctor-portal",
+      apiName: "Doctor_Approval",
+      httpMethod: "POST",
+      body: {
+        salesorder_id: SALESORDER_ID,
+        action: SELECTED_ACTION,
+        change_notes: changeNotes,
+        doctor_email: CASE_DATA.customer_email || "",
+        patient_name: CASE_DATA.patient_name || ""
+      }
+    }).then(function(response) {
+      var raw = response && response.result ? response.result : null;
+      var result;
+      try { result = JSON.parse(raw); } catch(e) { result = { success: "false" }; }
+
+      if(result.success === "true") {
+        document.getElementById("approval-form").style.display = "none";
+        var overlay = document.getElementById("success-overlay");
+        overlay.style.display = "block";
+        if(SELECTED_ACTION === "accepted") {
+          document.getElementById("success-icon").textContent = "✅";
+          document.getElementById("success-title").textContent = "Design Accepted!";
+          document.getElementById("success-message").textContent = "Thank you. Your case has been moved back into production. Our team has been notified.";
+        } else {
+          document.getElementById("success-icon").textContent = "✏️";
+          document.getElementById("success-title").textContent = "Change Request Submitted";
+          document.getElementById("success-message").textContent = "Thank you. Our team will review your notes and reach out with an updated design shortly.";
+        }
+      } else {
+        alert("Error: " + (result.error || "Unknown error. Please try again."));
+        btn.disabled = false;
+        btn.textContent = SELECTED_ACTION === "accepted" ? "✅ Confirm Design Acceptance" : "✏️ Submit Change Request";
+      }
+    }).catch(function(err) {
+      alert("Error: " + JSON.stringify(err));
+      btn.disabled = false;
+    });
+  }
+
+  function renderChat(notesText) {
+    var window_el = document.getElementById("chat-window");
+    window_el.innerHTML = "";
+    if(!notesText || notesText.trim() === "") {
+      window_el.innerHTML = '<p style="color:#aaa;font-size:13px;text-align:center;margin-top:20px;">No notes yet.</p>';
+      return;
+    }
+    var lines = notesText.split("\n");
+    lines.forEach(function(line) {
+      line = line.trim();
+      if(!line) return;
+      var match = line.match(/^\[(.+?) - (Doctor|3D DDS)\]: (.+)$/);
+      if(match) {
+        var div = document.createElement("div");
+        div.className = "chat-msg " + (match[2] === "Doctor" ? "doctor" : "staff");
+        div.innerHTML = '<div>' + escHtml(match[3]) + '</div><div class="meta">' + match[2] + ' · ' + match[1] + '</div>';
+        window_el.appendChild(div);
+      } else {
+        var div = document.createElement("div");
+        div.className = "chat-msg staff";
+        div.innerHTML = '<div>' + escHtml(line) + '</div>';
+        window_el.appendChild(div);
+      }
+    });
+    window_el.scrollTop = window_el.scrollHeight;
+  }
+
+  function sendNote() {
+    var input = document.getElementById("chat-input");
+    var text = input.value.trim();
+    if(!text) return;
+    var btn = document.getElementById("send-btn");
+    btn.disabled = true;
+    btn.textContent = "Sending...";
+    ZOHO.CREATOR.DATA.invokeCustomApi({
+      appName: "doctor-portal",
+      apiName: "Add_Case_Note",
+      httpMethod: "POST",
+      body: {
+        salesorder_id: SALESORDER_ID,
+        note_text: text,
+        sender_type: "Doctor",
+        doctor_email: CASE_DATA.customer_email || ""
+      }
+    }).then(function(response) {
+      var raw = response && response.result ? response.result : null;
+      var result;
+      try { result = JSON.parse(raw); } catch(e) { result = { success: "false" }; }
+      if(result.success === "true") {
+        input.value = "";
+        renderChat(result.updated_notes);
+      } else {
+        alert("Failed to send note.");
+      }
+      btn.disabled = false;
+      btn.textContent = "Send";
+    }).catch(function(err) {
+      alert("Error: " + JSON.stringify(err));
+      btn.disabled = false;
+      btn.textContent = "Send";
+    });
+  }
+
+  function handleFileUpload(files) {
+    if(!files || files.length === 0) return;
+    var status = document.getElementById("upload-status");
+    status.className = "upload-status";
+    status.textContent = "Uploading " + files.length + " file(s)...";
+    setTimeout(function() {
+      status.className = "upload-status success";
+      status.textContent = "✓ Upload feature coming soon — WorkDrive function in progress.";
+    }, 1000);
+  }
+
+  function goBack() {
+    ZOHO.CREATOR.UTIL.navigateParentURL("/doctor-portal/My_Cases1");
+  }
+
+  function formatDate(d) {
+    if(!d) return "—";
+    var parts = d.split("-");
+    if(parts.length !== 3) return d;
+    var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return months[parseInt(parts[1],10)-1] + " " + parts[2] + ", " + parts[0];
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  function showError(msg) {
+    document.getElementById("loading").style.display = "none";
+    var el = document.getElementById("error-msg");
+    el.textContent = msg;
+    el.style.display = "block";
+  }
+</script>
+</body>
+</html>

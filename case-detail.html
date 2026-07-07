@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Case Detail</title>
+  <script src="https://js.zohostatic.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
+  <style>
+    :root {
+      --brand-blue: #1e3a5f;
+      --brand-light: #e8f0fb;
+      --brand-accent: #2563eb;
+      --text-dark: #1a1a2e;
+      --text-mid: #555;
+      --text-light: #888;
+      --border: #e0e4ed;
+      --bg: #f5f7fa;
+      --white: #ffffff;
+      --green: #059669;
+      --green-light: #d1fae5;
+      --red: #dc2626;
+      --red-light: #fee2e2;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text-dark); }
+
+    /* Header */
+    .page-header {
+      background: var(--brand-blue);
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .back-btn {
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: white;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.25); }
+    .header-info h1 { font-size: 18px; font-weight: 700; }
+    .header-info p { font-size: 13px; opacity: 0.8; margin-top: 2px; }
+
+    /* Status bar */
+    .status-bar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .status-item label { font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.05em; display: block; }
+    .status-item span { font-size: 14px; font-weight: 600; color: var(--text-dark); }
+    .status-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; background: var(--brand-light); color: var(--brand-blue); }
+
+    /* Main content */
+    .content { padding: 20px 24px; display: grid; gap: 20px; }
+
+    /* Cards */
+    .card { background: var(--white); border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); overflow: hidden; }
+    .card-header { background: var(--brand-blue); color: white; padding: 12px 18px; font-size: 14px; font-weight: 600; letter-spacing: 0.02em; }
+    .card-body { padding: 18px; }
+
+    /* Item table */
+    .item-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .item-table th { text-align: left; padding: 8px 12px; background: var(--brand-light); color: var(--brand-blue); font-weight: 600; font-size: 12px; }
+    .item-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    .item-table tr:last-child td { border-bottom: none; }
+    .item-table tr:hover td { background: #fafbff; }
+
+    /* Chat */
+    .chat-window {
+      height: 280px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fafbff;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .chat-msg { max-width: 75%; padding: 9px 13px; border-radius: 14px; font-size: 13px; line-height: 1.5; }
+    .chat-msg.doctor { background: var(--brand-accent); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .chat-msg.staff { background: var(--white); border: 1px solid var(--border); color: var(--text-dark); align-self: flex-start; border-bottom-left-radius: 4px; }
+    .chat-msg .meta { font-size: 10px; opacity: 0.7; margin-top: 4px; }
+    .chat-input-row { display: flex; gap: 8px; }
+    .chat-input { flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; resize: none; font-family: inherit; }
+    .chat-input:focus { outline: none; border-color: var(--brand-accent); }
+    .send-btn { background: var(--brand-accent); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; }
+    .send-btn:hover { background: #1d4ed8; }
+    .send-btn:disabled { background: #93c5fd; cursor: not-allowed; }
+
+    /* File upload */
+    .upload-zone { border: 2px dashed var(--border); border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; transition: border-color 0.2s; }
+    .upload-zone:hover, .upload-zone.drag-over { border-color: var(--brand-accent); background: var(--brand-light); }
+    .upload-zone p { color: var(--text-mid); font-size: 13px; margin-top: 6px; }
+    .upload-zone .icon { font-size: 28px; }
+    #file-input { display: none; }
+    .upload-status { margin-top: 10px; font-size: 13px; }
+    .upload-status.success { color: var(--green); }
+    .upload-status.error { color: var(--red); }
+
+    /* Doctor folder */
+    .folder-link { display: inline-flex; align-items: center; gap: 8px; background: var(--brand-light); color: var(--brand-blue); padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; transition: background 0.2s; }
+    .folder-link:hover { background: #d0e2ff; }
+
+    /* Loading */
+    #loading { text-align: center; padding: 60px; color: var(--text-light); }
+    #error-msg { text-align: center; padding: 40px; color: var(--red); }
+    #main-content { display: none; }
+  </style>
+</head>
+<body>
+
+<div id="loading">Loading case details...</div>
+<div id="error-msg" style="display:none;"></div>
+
+<div id="main-content">
+  <!-- Header -->
+  <div class="page-header">
+    <img src="https://3ddds.net/wp-content/uploads/2026/02/site-logo-sm.png" alt="3D DDS Logo" style="height:36px;width:auto;"/>
+    <button class="back-btn" onclick="goBack()">← My Cases</button>
+    <div class="header-info">
+      <h1 id="h-patient-name">Loading...</h1>
+      <p id="h-so-number"></p>
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <div class="status-item">
+      <label>Order Date</label>
+      <span id="s-order-date">—</span>
+    </div>
+    <div class="status-item">
+      <label>Case Status</label>
+      <span id="s-case-status">—</span>
+    </div>
+    <div class="status-item">
+      <label>Expected Ship Date</label>
+      <span id="s-ship-date">—</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- Item Table -->
+    <div class="card">
+      <div class="card-header">📋 Order Items</div>
+      <div class="card-body" style="padding:0;">
+        <table class="item-table">
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Tooth # / Arch</th>
+              <th>Shade</th>
+              <th>Qty</th>
+              <th>Rate</th>
+            </tr>
+          </thead>
+          <tbody id="item-table-body">
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Chat Notes -->
+    <div class="card">
+      <div class="card-header">💬 Case Notes</div>
+      <div class="card-body">
+        <div class="chat-window" id="chat-window"></div>
+        <div class="chat-input-row">
+          <textarea class="chat-input" id="chat-input" rows="2" placeholder="Type a note..."></textarea>
+          <button class="send-btn" id="send-btn" onclick="sendNote()">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- File Upload -->
+    <div class="card">
+      <div class="card-header">📎 Upload Files</div>
+      <div class="card-body">
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+          <div class="icon">📁</div>
+          <strong>Click to upload or drag & drop</strong>
+          <p>Files will be saved to this order's WorkDrive folder</p>
+        </div>
+        <input type="file" id="file-input" multiple onchange="handleFileUpload(this.files)"/>
+        <div class="upload-status" id="upload-status"></div>
+      </div>
+    </div>
+
+    <!-- Doctor Folder -->
+    <div class="card">
+      <div class="card-header">📂 Design Files</div>
+      <div class="card-body">
+        <p style="color:var(--text-mid);font-size:13px;margin-bottom:12px;">View design files prepared for your review:</p>
+        <a id="folder-link" class="folder-link" href="#" target="_blank">
+          📂 Open Doctor Design Folder
+        </a>
+        <p id="no-folder" style="color:var(--text-light);font-size:13px;display:none;">No design folder linked to this case yet.</p>
+      </div>
+    </div>
+
+    <!-- Invoice (shown only for Completed cases with PDF link) -->
+    <div class="card" id="invoice-card" style="display:none;">
+      <div class="card-header">🧾 Invoice</div>
+      <div class="card-body">
+        <p style="color:var(--text-mid);font-size:13px;margin-bottom:12px;">Your invoice for this case is available below:</p>
+        <a id="invoice-link" class="folder-link" href="#" target="_blank">
+          🧾 View Invoice PDF
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  var SALESORDER_ID = "";
+  var CASE_DATA = {};
+  var DOCTOR_EMAIL = "";
+
+  ZOHO.CREATOR.init().then(function() {
+    // Get salesorder_id from URL hash params
+    var hash = window.location.hash.replace("#","");
+    var params = {};
+    hash.split("&").forEach(function(p) {
+      var kv = p.split("=");
+      if(kv.length === 2) params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1]);
+    });
+    SALESORDER_ID = params.salesorder_id || "";
+
+    if(!SALESORDER_ID) {
+      showError("No case selected. Please go back and select a case.");
+      return;
+    }
+
+    loadCaseDetail();
+  });
+
+  function loadCaseDetail() {
+    ZOHO.CREATOR.DATA.invokeCustomApi({
+      appName: "doctor-portal",
+      apiName: "Get_Case_Detail",
+      httpMethod: "GET",
+      params: { salesorder_id: SALESORDER_ID }
+    }).then(function(response) {
+      var raw = response && response.result ? response.result : null;
+      if(!raw) { showError("No data returned."); return; }
+
+      var data;
+      try { data = JSON.parse(raw); } catch(e) { showError("Parse error: " + e.message); return; }
+
+      if(data.success !== "true") { showError("Error: " + data.error); return; }
+
+      CASE_DATA = data;
+      DOCTOR_EMAIL = data.customer_email || "";
+      renderPage(data);
+
+    }).catch(function(err) {
+      showError("API error: " + JSON.stringify(err));
+    });
+  }
+
+  function renderPage(data) {
+    // Header
+    document.getElementById("h-patient-name").textContent = data.patient_name || "Unknown Patient";
+    document.getElementById("h-so-number").textContent = data.salesorder_number || "";
+
+    // Status bar
+    document.getElementById("s-order-date").textContent = formatDate(data.order_date);
+    document.getElementById("s-case-status").innerHTML = '<span class="status-badge">' + (data.case_status || "—") + '</span>';
+    document.getElementById("s-ship-date").textContent = data.expected_ship_date ? formatDate(data.expected_ship_date) : "Not set";
+
+    // Line items
+    var items = [];
+    try { items = JSON.parse(data.line_items); } catch(e) {}
+    var tbody = document.getElementById("item-table-body");
+    if(items.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="padding:16px;color:#888;text-align:center;">No items found</td></tr>';
+    } else {
+      items.forEach(function(item) {
+        var tr = document.createElement("tr");
+        tr.innerHTML =
+          "<td><strong>" + (item.name || "—") + "</strong></td>" +
+          "<td>" + (item.tooth_arch || "—") + "</td>" +
+          "<td>" + (item.shade || "—") + "</td>" +
+          "<td>" + (item.quantity || "1") + "</td>" +
+          "<td>$" + parseFloat(item.rate || 0).toFixed(2) + "</td>";
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Chat notes
+    renderChat(data.customer_notes || "");
+
+    // Doctor folder
+    if(data.doctor_folder_url && data.doctor_folder_url !== "") {
+      var link = document.getElementById("folder-link");
+      link.href = data.doctor_folder_url;
+    } else {
+      document.getElementById("folder-link").style.display = "none";
+      document.getElementById("no-folder").style.display = "block";
+    }
+
+    // Invoice PDF — only show for Completed cases with a PDF link
+    if(data.case_status === "Completed" && data.invoice_pdf && data.invoice_pdf !== "") {
+      document.getElementById("invoice-card").style.display = "block";
+      document.getElementById("invoice-link").href = data.invoice_pdf;
+    }
+
+    // Show page
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("main-content").style.display = "block";
+
+    // Drag/drop upload
+    var zone = document.getElementById("upload-zone");
+    zone.addEventListener("dragover", function(e) { e.preventDefault(); zone.classList.add("drag-over"); });
+    zone.addEventListener("dragleave", function() { zone.classList.remove("drag-over"); });
+    zone.addEventListener("drop", function(e) { e.preventDefault(); zone.classList.remove("drag-over"); handleFileUpload(e.dataTransfer.files); });
+  }
+
+  function renderChat(notesText) {
+    var window_el = document.getElementById("chat-window");
+    window_el.innerHTML = "";
+    if(!notesText || notesText.trim() === "") {
+      window_el.innerHTML = '<p style="color:#aaa;font-size:13px;text-align:center;margin-top:20px;">No notes yet. Start the conversation below.</p>';
+      return;
+    }
+
+    // Parse lines: [MM/DD/YYYY HH:MM AM - Doctor]: message
+    var lines = notesText.split("\n");
+    lines.forEach(function(line) {
+      line = line.trim();
+      if(!line) return;
+      var match = line.match(/^\[(.+?) - (Doctor|3D DDS)\]: (.+)$/);
+      if(match) {
+        var timestamp = match[1];
+        var sender = match[2];
+        var msg = match[3];
+        var div = document.createElement("div");
+        div.className = "chat-msg " + (sender === "Doctor" ? "doctor" : "staff");
+        div.innerHTML = '<div>' + escHtml(msg) + '</div><div class="meta">' + sender + ' · ' + timestamp + '</div>';
+        window_el.appendChild(div);
+      } else {
+        // Legacy/unformatted note — show as staff message
+        var div = document.createElement("div");
+        div.className = "chat-msg staff";
+        div.innerHTML = '<div>' + escHtml(line) + '</div>';
+        window_el.appendChild(div);
+      }
+    });
+    window_el.scrollTop = window_el.scrollHeight;
+  }
+
+  function sendNote() {
+    var input = document.getElementById("chat-input");
+    var text = input.value.trim();
+    if(!text) return;
+
+    var btn = document.getElementById("send-btn");
+    btn.disabled = true;
+    btn.textContent = "Sending...";
+
+    ZOHO.CREATOR.DATA.invokeCustomApi({
+      appName: "doctor-portal",
+      apiName: "Add_Case_Note",
+      httpMethod: "POST",
+      body: {
+        salesorder_id: SALESORDER_ID,
+        note_text: text,
+        sender_type: "Doctor",
+        doctor_email: DOCTOR_EMAIL
+      }
+    }).then(function(response) {
+      var raw = response && response.result ? response.result : null;
+      var result;
+      try { result = JSON.parse(raw); } catch(e) { result = { success: "false" }; }
+
+      if(result.success === "true") {
+        input.value = "";
+        renderChat(result.updated_notes);
+      } else {
+        alert("Failed to send note: " + (result.error || "Unknown error"));
+      }
+      btn.disabled = false;
+      btn.textContent = "Send";
+    }).catch(function(err) {
+      alert("Error: " + JSON.stringify(err));
+      btn.disabled = false;
+      btn.textContent = "Send";
+    });
+  }
+
+  function handleFileUpload(files) {
+    if(!files || files.length === 0) return;
+    var status = document.getElementById("upload-status");
+    status.className = "upload-status";
+    status.textContent = "Uploading " + files.length + " file(s)...";
+
+    // File upload goes through a separate Custom API (Add_Case_File)
+    // that calls the WorkDrive upload Deluge function
+    // Placeholder — wire up after WorkDrive function is built
+    setTimeout(function() {
+      status.className = "upload-status success";
+      status.textContent = "✓ Upload feature coming soon — WorkDrive function in progress.";
+    }, 1000);
+  }
+
+  function goBack() {
+    ZOHO.CREATOR.UTIL.navigateParentURL("/doctor-portal/My_Cases1");
+  }
+
+  function formatDate(d) {
+    if(!d) return "—";
+    var parts = d.split("-");
+    if(parts.length !== 3) return d;
+    var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return months[parseInt(parts[1],10)-1] + " " + parts[2] + ", " + parts[0];
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  function showError(msg) {
+    document.getElementById("loading").style.display = "none";
+    var el = document.getElementById("error-msg");
+    el.textContent = msg;
+    el.style.display = "block";
+  }
+</script>
+</body>
+</html>

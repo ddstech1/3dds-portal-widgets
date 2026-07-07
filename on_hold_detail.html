@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Case On Hold</title>
+  <script src="https://js.zohostatic.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
+  <style>
+    :root {
+      --brand-blue: #1e3a5f;
+      --brand-light: #e8f0fb;
+      --brand-accent: #2563eb;
+      --text-dark: #1a1a2e;
+      --text-mid: #555;
+      --text-light: #888;
+      --border: #e0e4ed;
+      --bg: #f5f7fa;
+      --white: #ffffff;
+      --green: #059669;
+      --green-light: #d1fae5;
+      --red-light: #fee2e2;
+      --red: #dc2626;
+      --amber: #d97706;
+      --amber-light: #fef3c7;
+      --orange: #ea580c;
+      --orange-light: #ffedd5;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text-dark); }
+
+    .page-header { background: var(--brand-blue); padding: 14px 24px; display: flex; align-items: center; gap: 16px; }
+    .page-header img { height: 36px; width: auto; }
+    .back-btn { background: rgba(255,255,255,0.15); border: none; color: white; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .back-btn:hover { background: rgba(255,255,255,0.25); }
+    .header-info h1 { color: white; font-size: 18px; font-weight: 700; }
+    .header-info p { color: rgba(255,255,255,0.8); font-size: 13px; margin-top: 2px; }
+
+    .status-bar { background: var(--white); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; gap: 32px; flex-wrap: wrap; }
+    .status-item label { font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.05em; display: block; }
+    .status-item span { font-size: 14px; font-weight: 600; color: var(--text-dark); }
+    .status-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; background: var(--orange-light); color: var(--orange); }
+
+    .content { padding: 20px 24px; display: grid; gap: 20px; }
+
+    .card { background: var(--white); border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); overflow: hidden; }
+    .card-header { background: var(--brand-blue); color: white; padding: 12px 18px; font-size: 14px; font-weight: 600; }
+    .card-body { padding: 18px; }
+
+    .hold-prompt { background: var(--orange-light); border: 1px solid #fed7aa; border-radius: 10px; padding: 20px 24px; }
+    .hold-prompt h3 { color: var(--orange); font-size: 15px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .hold-prompt p { color: #7c2d12; font-size: 13px; line-height: 1.6; }
+
+    .approval-section { margin-top: 20px; }
+    .approval-section h3 { font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 14px; }
+    .checkbox-group { display: grid; gap: 12px; }
+    .checkbox-option { display: flex; align-items: flex-start; gap: 12px; padding: 16px; border: 2px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.2s; }
+    .checkbox-option:hover { border-color: var(--brand-accent); background: var(--brand-light); }
+    .checkbox-option.selected-proceed { border-color: var(--green); background: var(--green-light); }
+    .checkbox-option.selected-details { border-color: var(--orange); background: var(--orange-light); }
+    .checkbox-option input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; cursor: pointer; accent-color: var(--brand-accent); flex-shrink: 0; }
+    .checkbox-option .option-text h4 { font-size: 14px; font-weight: 600; color: var(--text-dark); }
+    .checkbox-option .option-text p { font-size: 12px; color: var(--text-mid); margin-top: 3px; }
+
+    .details-section { display: none; margin-top: 16px; padding: 16px; background: var(--orange-light); border: 1px solid #fed7aa; border-radius: 10px; }
+    .details-section h4 { font-size: 13px; font-weight: 700; color: #7c2d12; margin-bottom: 10px; }
+    .details-textarea { width: 100%; padding: 10px 14px; border: 1px solid #fed7aa; border-radius: 8px; font-size: 13px; resize: vertical; font-family: inherit; background: white; min-height: 100px; }
+    .details-textarea:focus { outline: none; border-color: var(--orange); }
+
+    .upload-zone { border: 2px dashed #fed7aa; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; margin-top: 12px; transition: all 0.2s; background: white; }
+    .upload-zone:hover { border-color: var(--orange); background: #fff7ed; }
+    #file-input { display: none; }
+    .upload-status { margin-top: 8px; font-size: 12px; }
+    .upload-status.success { color: var(--green); }
+
+    .submit-btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px; transition: all 0.2s; }
+    .submit-btn.proceed { background: var(--green); color: white; }
+    .submit-btn.proceed:hover { background: #047857; }
+    .submit-btn.details { background: var(--orange); color: white; }
+    .submit-btn.details:hover { background: #c2410c; }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .item-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .item-table th { text-align: left; padding: 8px 12px; background: var(--brand-light); color: var(--brand-blue); font-weight: 600; font-size: 12px; }
+    .item-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+    .item-table tr:last-child td { border-bottom: none; }
+
+    .chat-window { height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 12px; background: #fafbff; margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .chat-msg { max-width: 75%; padding: 9px 13px; border-radius: 14px; font-size: 13px; line-height: 1.5; }
+    .chat-msg.doctor { background: var(--brand-accent); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .chat-msg.staff { background: var(--white); border: 1px solid var(--border); color: var(--text-dark); align-self: flex-start; border-bottom-left-radius: 4px; }
+    .chat-msg .meta { font-size: 10px; opacity: 0.7; margin-top: 4px; }
+    .chat-input-row { display: flex; gap: 8px; }
+    .chat-input { flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; resize: none; font-family: inherit; }
+    .chat-input:focus { outline: none; border-color: var(--brand-accent); }
+    .send-btn { background: var(--brand-accent); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; }
+    .send-btn:hover { background: #1d4ed8; }
+
+    .success-overlay { display: none; text-align: center; padding: 40px; }
+    .success-overlay .icon { font-size: 48px; margin-bottom: 16px; }
+    .success-overlay h2 { font-size: 20px; margin-bottom: 8px; }
+    .success-overlay p { color: var(--text-mid); font-size: 14px; margin-bottom: 20px; }
+    .success-overlay button { background: var(--brand-blue); color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
+
+    #loading { text-align: center; padding: 60px; color: var(--text-light); }
+    #error-msg { text-align: center; padding: 40px; color: var(--red); }
+    #main-content { display: none; }
+  </style>
+</head>
+<body>
+
+<div id="loading">Loading case details...</div>
+<div id="error-msg" style="display:none;"></div>
+
+<div id="main-content">
+  <div class="page-header">
+    <img src="https://3ddds.net/wp-content/uploads/2026/02/site-logo-sm.png" alt="3D DDS Logo"/>
+    <button class="back-btn" onclick="goBack()">← My Cases</button>
+    <div class="header-info">
+      <h1 id="h-patient-name">Loading...</h1>
+      <p id="h-so-number"></p>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-item">
+      <label>Order Date</label>
+      <span id="s-order-date">—</span>
+    </div>
+    <div class="status-item">
+      <label>Case Status</label>
+      <span id="s-case-status">—</span>
+    </div>
+    <div class="status-item">
+      <label>Expected Ship Date</label>
+      <span id="s-ship-date">—</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- Hold Prompt -->
+    <div class="hold-prompt">
+      <h3>⏸ This Case is Currently On Hold</h3>
+      <p>Your case has been placed on hold because additional information or clarification is needed. Please review the message from our team below, then either approve us to proceed with the current design or submit additional details and files to help us move forward. Our team will be notified immediately upon your response.</p>
+      <div id="hold-reason-box" style="display:none; margin-top:14px; background:white; border:1px solid #fed7aa; border-radius:8px; padding:14px 16px;">
+        <div style="font-size:11px; color:#ea580c; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Message from 3D DDS:</div>
+        <div id="hold-reason-text" style="font-size:13px; color:#7c2d12; line-height:1.6;"></div>
+      </div>
+    </div>
+
+    <!-- Response Options -->
+    <div class="card">
+      <div class="card-header">📋 Your Response</div>
+      <div class="card-body">
+        <div id="response-form">
+          <div class="approval-section">
+            <h3>Please select one of the following:</h3>
+            <div class="checkbox-group">
+              <label class="checkbox-option" id="proceed-option" onclick="selectOption('proceed')">
+                <input type="checkbox" id="proceed-checkbox"/>
+                <div class="option-text">
+                  <h4>✅ Proceed As Is</h4>
+                  <p>I am satisfied with the current design. Please proceed with production as designed.</p>
+                </div>
+              </label>
+              <label class="checkbox-option" id="details-option" onclick="selectOption('submit_details')">
+                <input type="checkbox" id="details-checkbox"/>
+                <div class="option-text">
+                  <h4>📎 Submit Additional Details</h4>
+                  <p>I have additional information, photos, or files that will help clarify what is needed.</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Additional details section -->
+          <div class="details-section" id="details-section">
+            <h4>Please provide your additional details:</h4>
+            <textarea class="details-textarea" id="additional-notes" placeholder="Please be as detailed as possible — include any specific instructions, measurements, shade preferences, or other information that will help us complete your case correctly..."></textarea>
+            <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+              <div style="font-size:24px;">📎</div>
+              <strong style="font-size:13px;">Attach photos or files (optional)</strong>
+              <p style="color:#888;font-size:12px;margin-top:4px;">Click to upload or drag & drop — files go directly to your case folder</p>
+            </div>
+            <input type="file" id="file-input" multiple onchange="handleFileUpload(this.files)"/>
+            <div class="upload-status" id="upload-status"></div>
+          </div>
+
+          <button class="submit-btn" id="submit-btn" onclick="submitResponse()" disabled>
+            Select an option above to continue
+          </button>
+        </div>
+
+        <div class="success-overlay" id="success-overlay">
+          <div class="icon" id="success-icon">✅</div>
+          <h2 id="success-title" style="color: var(--green);">Response Submitted</h2>
+          <p id="success-message">Thank you. Our team has been notified.</p>
+          <button onclick="goBack()">← Return to My Cases</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Item Table -->
+    <div class="card">
+      <div class="card-header">📋 Order Items</div>
+      <div class="card-body" style="padding:0;">
+        <table class="item-table">
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Tooth # / Arch</th>
+              <th>Shade</th>
+              <th>Qty</th>
+              <th>Rate</th>
+            </tr>
+          </thead>
+          <tbody id="item-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Case Notes -->
+    <div class="card">
+      <div class="card-header">💬 Case Notes</div>
+      <div class="card-body">
+        <div class="chat-window" id="chat-window"></div>
+        <div class="chat-input-row">
+          <textarea class="chat-input" id="chat-input" rows="2" placeholder="Type a note..."></textarea>
+          <button class="send-btn" id="send-btn" onclick="sendNote()">Send</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  var SALESORDER_ID = "";
+  var CASE_DATA = {};
+  var SELECTED_ACTION = "";
+
+  ZOHO.CREATOR.init().then(function() {
+    var hash = window.location.hash.replace("#","");
+    var params = {};
+    hash.split("&").forEach(function(p) {
+      var kv = p.split("=");
+      if(kv.length === 2) params[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1]);
+    });
+    SALESORDER_ID = params.salesorder_id || "";
+    if(!SALESORDER_ID) { showError("No case selected."); return; }
+    loadCaseDetail();
+  });
+
+  function loadCaseDetail() {
+    ZOHO.CREATOR.DATA.invokeCustomApi({
+      appName: "doctor-portal",
+      apiName: "Get_Case_Detail",
+      httpMethod: "GET",
+      params: { salesorder_id: SALESORDER_ID }
+    }).then(function(response) {
+      var raw = response && response.result ? response.result : null;
+      if(!raw) { showError("No data returned."); return; }
+      var data;
+      try { data = JSON.parse(raw); } catch(e) { showError("Parse error: " + e.message); return; }
+      if(data.success !== "true") { showError("Error: " + data.error); return; }
+      CASE_DATA = data;
+      renderPage(data);
+    }).catch(function(err) { showError("API error: " + JSON.stringify(err)); });
+  }
+
+  function renderPage(data) {
+    document.getElementById("h-patient-name").textContent = data.patient_name || "Unknown Patient";
+    document.getElementById("h-so-number").textContent = data.salesorder_number || "";
+    document.getElementById("s-order-date").textContent = formatDate(data.order_date);
+    document.getElementById("s-case-status").innerHTML = '<span class="status-badge">' + (data.case_status || "—") + '</span>';
+    document.getElementById("s-ship-date").textContent = data.expected_ship_date ? formatDate(data.expected_ship_date) : "Not set";
+
+    var items = [];
+    try { items = JSON.parse(data.line_items); } catch(e) {}
+    var tbody = document.getElementById("item-table-body");
+    if(items.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="padding:16px;color:#888;text-align:center;">No items found</td></tr>';
+    } else {
+      items.forEach(function(item) {
+        var tr = document.createElement("tr");
+        tr.innerHTML =
+          "<td><strong>" + (item.name || "—") + "</strong></td>" +
+          "<td>" + (item.tooth_arch || "—") + "</td>" +
+          "<td>" + (item.shade || "—") + "</td>" +
+          "<td>" + (item.quantity || "1") + "</td>" +
+          "<td>$" + parseFloat(item.rate || 0).toFixed(2) + "</td>";
+        tbody.appendChild(tr);
+      });
+    }
+
+    renderChat(data.customer_notes || "");
+
+    // Extract last staff note and show as hold reason
+    var holdReason = getLastStaffNote(data.customer_notes || "");
+    if(holdReason) {
+      document.getElementById("hold-reason-text").textContent = holdReason;
+      document.getElementById("hold-reason-box").style.display = "block";
+    }
+
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("main-content").style.display = "block";
+
+    var zone = document.getElementById("upload-zone");
+    zone.addEventListener("dragover", function(e) { e.preventDefault(); });
+    zone.addEventListener("drop", function(e) { e.preventDefault(); handleFileUpload(e.dataTransfer.files); });
+  }
+
+  function selectOption(action) {
+    SELECTED_ACTION = action;
+    var proceedBox = document.getElementById("proceed-checkbox");
+    var detailsBox = document.getElementById("details-checkbox");
+    var proceedOption = document.getElementById("proceed-option");
+    var detailsOption = document.getElementById("details-option");
+    var detailsSection = document.getElementById("details-section");
+    var submitBtn = document.getElementById("submit-btn");
+
+    if(action === "proceed") {
+      proceedBox.checked = true;
+      detailsBox.checked = false;
+      proceedOption.className = "checkbox-option selected-proceed";
+      detailsOption.className = "checkbox-option";
+      detailsSection.style.display = "none";
+      submitBtn.className = "submit-btn proceed";
+      submitBtn.textContent = "✅ Confirm — Proceed As Is";
+      submitBtn.disabled = false;
+    } else {
+      detailsBox.checked = true;
+      proceedBox.checked = false;
+      detailsOption.className = "checkbox-option selected-details";
+      proceedOption.className = "checkbox-option";
+      detailsSection.style.display = "block";
+      submitBtn.className = "submit-btn details";
+      submitBtn.textContent = "📎 Submit Additional Details";
+      submitBtn.disabled = false;
+    }
+  }
+
+  function submitResponse() {
+    if(!SELECTED_ACTION) return;
+
+    var additionalNotes = "";
+    if(SELECTED_ACTION === "submit_details") {
+      additionalNotes = document.getElementById("additional-notes").value.trim();
+      if(!additionalNotes) {
+        alert("Please provide your additional details before submitting.");
+        return;
+      }
+    }
+
+    var btn = document.getElementById("submit-btn");
+    btn.disabled = true;
+    btn.textContent = "Submitting...";
+
+    ZOHO.CREATOR.DATA.invokeCustomApi({
+      appName: "doctor-portal",
+      apiName: "On_Hold_Response",
+      httpMethod: "POST",
+      body: {
+        salesorder_id: SALESORDER_ID,
+        action: SELECTED_ACTION,
+        additional_notes: additionalNotes,
+        doctor_email: CASE_DATA.customer_email || "",
+        patient_name: CASE_DATA.patient_name || ""
+      }
+    }).then(function(response) {
+      var raw = response && response.result ? response.result : null;
+      var result;
+      try { result = JSON.parse(raw); } catch(e) { result = { success: "false" }; }
+
+      if(result.success === "true") {
+        document.getElementById("response-form").style.display = "none";
+        var overlay = document.getElementById("success-overlay");
+        overlay.style.display = "block";
+        if(SELECTED_ACTION === "proceed") {
+          document.getElementById("success-icon").textContent = "✅";
+          document.getElementById("success-title").textContent = "Response Received!";
+          document.getElementById("success-title").style.color = "var(--green)";
+          document.getElementById("success-message").textContent = "Thank you. Your case has been moved back into production. Our team has been notified and will proceed as designed.";
+        } else {
+          document.getElementById("success-icon").textContent = "📎";
+          document.getElementById("success-title").textContent = "Details Submitted";
+          document.getElementById("success-title").style.color = "var(--orange)";
+          document.getElementById("success-message").textContent = "Thank you for submitting additional details. Our team will review your notes and files and will be in touch shortly with next steps.";
+        }
+      } else {
+        alert("Error: " + (result.error || "Unknown error. Please try again."));
+        btn.disabled = false;
+        btn.textContent = SELECTED_ACTION === "proceed" ? "✅ Confirm — Proceed As Is" : "📎 Submit Additional Details";
+      }
+    }).catch(function(err) {
+      alert("Error: " + JSON.stringify(err));
+      btn.disabled = false;
+    });
+  }
+
+  function renderChat(notesText) {
+    var window_el = document.getElementById("chat-window");
+    window_el.innerHTML = "";
+    if(!notesText || notesText.trim() === "") {
+      window_el.innerHTML = '<p style="color:#aaa;font-size:13px;text-align:center;margin-top:20px;">No notes yet.</p>';
+      return;
+    }
+    var lines = notesText.split("\n");
+    lines.forEach(function(line) {
+      line = line.trim();
+      if(!line) return;
+      var match = line.match(/^\[(.+?) - (Doctor|3D DDS)\]: (.+)$/);
+      if(match) {
+        var div = document.createElement("div");
+        div.className = "chat-msg " + (match[2] === "Doctor" ? "doctor" : "staff");
+        div.innerHTML = '<div>' + escHtml(match[3]) + '</div><div class="meta">' + match[2] + ' · ' + match[1] + '</div>';
+        window_el.appendChild(div);
+      } else {
+        var div = document.createElement("div");
+        div.className = "chat-msg staff";
+        div.innerHTML = '<div>' + escHtml(line) + '</div>';
+        window_el.appendChild(div);
+      }
+    });
+    window_el.scrollTop = window_el.scrollHeight;
+  }
+
+  function sendNote() {
+    var input = document.getElementById("chat-input");
+    var text = input.value.trim();
+    if(!text) return;
+    var btn = document.getElementById("send-btn");
+    btn.disabled = true;
+    btn.textContent = "Sending...";
+    ZOHO.CREATOR.DATA.invokeCustomApi({
+      appName: "doctor-portal",
+      apiName: "Add_Case_Note",
+      httpMethod: "POST",
+      body: {
+        salesorder_id: SALESORDER_ID,
+        note_text: text,
+        sender_type: "Doctor",
+        doctor_email: CASE_DATA.customer_email || ""
+      }
+    }).then(function(response) {
+      var raw = response && response.result ? response.result : null;
+      var result;
+      try { result = JSON.parse(raw); } catch(e) { result = { success: "false" }; }
+      if(result.success === "true") {
+        input.value = "";
+        renderChat(result.updated_notes);
+      } else {
+        alert("Failed to send note.");
+      }
+      btn.disabled = false;
+      btn.textContent = "Send";
+    }).catch(function(err) {
+      alert("Error: " + JSON.stringify(err));
+      btn.disabled = false;
+      btn.textContent = "Send";
+    });
+  }
+
+  function handleFileUpload(files) {
+    if(!files || files.length === 0) return;
+    var status = document.getElementById("upload-status");
+    status.className = "upload-status";
+    status.textContent = "Uploading " + files.length + " file(s)...";
+    setTimeout(function() {
+      status.className = "upload-status success";
+      status.textContent = "✓ Upload feature coming soon — WorkDrive function in progress.";
+    }, 1000);
+  }
+
+  function goBack() {
+    ZOHO.CREATOR.UTIL.navigateParentURL("/doctor-portal/My_Cases1");
+  }
+
+  function formatDate(d) {
+    if(!d) return "—";
+    var parts = d.split("-");
+    if(parts.length !== 3) return d;
+    var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return months[parseInt(parts[1],10)-1] + " " + parts[2] + ", " + parts[0];
+  }
+
+  function getLastStaffNote(notesText) {
+    if(!notesText || notesText.trim() === "") return null;
+    var lines = notesText.split("\n");
+    var lastStaffMsg = null;
+    lines.forEach(function(line) {
+      line = line.trim();
+      if(!line) return;
+      var match = line.match(/^\[(.+?) - (3D DDS)\]: (.+)$/);
+      if(match) { lastStaffMsg = match[3]; }
+    });
+    return lastStaffMsg;
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  function showError(msg) {
+    document.getElementById("loading").style.display = "none";
+    var el = document.getElementById("error-msg");
+    el.textContent = msg;
+    el.style.display = "block";
+  }
+</script>
+</body>
+</html>
