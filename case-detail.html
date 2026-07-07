@@ -163,7 +163,7 @@
               <th>Tooth # / Arch</th>
               <th>Shade</th>
               <th>Qty</th>
-              <th>Rate</th>
+              <th id="rate-header">Rate</th>
             </tr>
           </thead>
           <tbody id="item-table-body">
@@ -244,10 +244,31 @@
       return;
     }
 
+    window.PORTAL_ROLE = "Staff"; // default to least privileged
     loadCaseDetail();
   });
 
   function loadCaseDetail() {
+    // First get role, then load case detail
+    ZOHO.CREATOR.DATA.invokeCustomApi({
+      appName: "doctor-portal",
+      apiName: "Get_Portal_User_Info",
+      httpMethod: "GET"
+    }).then(function(userResponse) {
+      var userRaw = userResponse && userResponse.result ? userResponse.result : null;
+      if(userRaw) {
+        try {
+          var userInfo = JSON.parse(userRaw);
+          window.PORTAL_ROLE = userInfo.role || "Staff";
+        } catch(e) {}
+      }
+      fetchCaseDetail();
+    }).catch(function() {
+      fetchCaseDetail();
+    });
+  }
+
+  function fetchCaseDetail() {
     ZOHO.CREATOR.DATA.invokeCustomApi({
       appName: "doctor-portal",
       apiName: "Get_Case_Detail",
@@ -285,17 +306,25 @@
     var items = [];
     try { items = JSON.parse(data.line_items); } catch(e) {}
     var tbody = document.getElementById("item-table-body");
+    var isAccountHolder = window.PORTAL_ROLE === "Account Holder";
+
+    // Hide Rate column for Staff
+    if(!isAccountHolder) {
+      document.getElementById("rate-header").style.display = "none";
+    }
+
     if(items.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="padding:16px;color:#888;text-align:center;">No items found</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="' + (isAccountHolder ? "5" : "4") + '" style="padding:16px;color:#888;text-align:center;">No items found</td></tr>';
     } else {
       items.forEach(function(item) {
         var tr = document.createElement("tr");
+        var rateCell = isAccountHolder ? "<td>$" + parseFloat(item.rate || 0).toFixed(2) + "</td>" : "";
         tr.innerHTML =
           "<td><strong>" + (item.name || "—") + "</strong></td>" +
           "<td>" + (item.tooth_arch || "—") + "</td>" +
           "<td>" + (item.shade || "—") + "</td>" +
           "<td>" + (item.quantity || "1") + "</td>" +
-          "<td>$" + parseFloat(item.rate || 0).toFixed(2) + "</td>";
+          rateCell;
         tbody.appendChild(tr);
       });
     }
@@ -312,8 +341,8 @@
       document.getElementById("no-folder").style.display = "block";
     }
 
-    // Invoice PDF — only show for Completed cases with a PDF link
-    if(data.case_status === "Completed" && data.invoice_pdf && data.invoice_pdf !== "") {
+    // Invoice PDF — Account Holder only, Completed cases with PDF link
+    if(data.case_status === "Completed" && data.invoice_pdf && data.invoice_pdf !== "" && window.PORTAL_ROLE === "Account Holder") {
       document.getElementById("invoice-card").style.display = "block";
       document.getElementById("invoice-link").href = data.invoice_pdf;
     }
