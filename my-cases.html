@@ -4,49 +4,42 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Cases</title>
-  
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f7fa; }
 
-    /* Header */
     .page-header { background: #1e3a5f; padding: 14px 20px; display: flex; align-items: center; gap: 14px; }
     .page-header img { height: 36px; width: auto; }
-    .page-header h2 { color: white; font-size: 18px; font-weight: 600; }
+    .page-header h2 { color: white; font-size: 18px; font-weight: 600; flex: 1; }
+    #practice-logo { height: 32px; width: auto; display: none; border-radius: 4px; }
+    #practice-name { color: rgba(255,255,255,0.85); font-size: 13px; }
 
-    /* Search bar */
     .search-bar { background: white; padding: 12px 20px; border-bottom: 1px solid #e0e4ed; display: flex; align-items: center; gap: 10px; }
     .search-input { flex: 1; padding: 8px 14px; border: 1px solid #e0e4ed; border-radius: 8px; font-size: 13px; outline: none; }
     .search-input:focus { border-color: #2563eb; }
     .search-clear { background: none; border: none; color: #888; cursor: pointer; font-size: 18px; padding: 0 4px; display: none; }
 
-    /* Tabs */
     .tabs { background: white; border-bottom: 1px solid #e0e4ed; display: flex; overflow-x: auto; }
     .tab { padding: 12px 20px; font-size: 13px; font-weight: 500; color: #666; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
     .tab:hover { color: #1e3a5f; background: #f5f7fa; }
     .tab.active { color: #1e3a5f; border-bottom-color: #1e3a5f; font-weight: 700; }
-    .tab .badge { background: #e8f0fb; color: #1e3a5f; padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+    .tab .badge { padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 700; }
     .tab.active .badge { background: #1e3a5f; color: white; }
-    .tab.pending .badge { background: #fef3c7; color: #92400e; }
-    .tab.onhold .badge { background: #ffedd5; color: #ea580c; }
-    .tab.shipped .badge { background: #d1fae5; color: #065f46; }
-    .tab.completed .badge { background: #e8f0fb; color: #1e3a5f; }
+    .tab-active-tab .badge { background: #e8f0fb; color: #1e3a5f; }
+    .tab-pending .badge { background: #fef3c7; color: #92400e; }
+    .tab-onhold .badge { background: #ffedd5; color: #ea580c; }
+    .tab-shipped .badge { background: #d1fae5; color: #065f46; }
+    .tab-completed .badge { background: #e8f0fb; color: #1e3a5f; }
 
-    /* Alert dot */
     .alert-dot { width: 8px; height: 8px; border-radius: 50%; display: none; flex-shrink: 0; }
     .alert-dot.visible { display: inline-block; }
     .alert-dot.amber { background: #d97706; animation: pulse-dot 1.5s infinite; }
     .alert-dot.orange { background: #ea580c; animation: pulse-dot 1.5s infinite; }
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.8); }
-    }
+    @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
 
-    /* Tab content */
     .tab-content { display: none; padding: 16px 20px; }
     .tab-content.active { display: block; }
 
-    /* Table */
     table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
     thead tr { background: #1e3a5f; color: #fff; }
     thead th { padding: 11px 16px; text-align: left; font-size: 12px; font-weight: 600; letter-spacing: 0.03em; }
@@ -58,18 +51,10 @@
     .patient-link { color: #2563eb; }
     .no-date { color: #aaa; font-style: italic; }
 
-    /* Status badges */
-    .badge-active { background: #e8f0fb; color: #1e3a5f; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
-    .badge-pending { background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
-    .badge-hold { background: #ffedd5; color: #ea580c; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
-    .badge-shipped { background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
-    .badge-completed { background: #e8f0fb; color: #1e3a5f; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
-
     .loading { text-align: center; padding: 40px; color: #888; font-size: 13px; }
     .error { text-align: center; padding: 40px; color: #dc2626; font-size: 13px; }
     .empty { text-align: center; padding: 40px; color: #888; font-size: 13px; }
   </style>
-<script src="https://js.zohostatic.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
 </head>
 <body>
 
@@ -77,77 +62,51 @@
     <img src="https://3ddds.net/wp-content/uploads/2026/02/site-logo-sm.png" alt="3D DDS Logo"/>
     <h2>My Cases</h2>
     <div style="margin-left:auto; display:flex; align-items:center; gap:10px;">
-      <img id="practice-logo" src="" alt="Practice Logo" style="height:32px; width:auto; display:none; border-radius:4px; background:rgba(255,255,255,0.1); padding:2px;"/>
-      <span id="practice-name" style="color:rgba(255,255,255,0.85); font-size:13px;"></span>
+      <img id="practice-logo" src="" alt="Practice Logo"/>
+      <span id="practice-name"></span>
     </div>
   </div>
 
-  <!-- Search -->
   <div class="search-bar">
     <input type="text" class="search-input" id="search-input" placeholder="Search by patient name..." oninput="filterRows(this.value)"/>
-    <button class="search-clear" id="search-clear" onclick="clearSearch()">Ã—</button>
+    <button class="search-clear" id="search-clear" onclick="clearSearch()">x</button>
   </div>
 
-  <!-- Tabs -->
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('active')">Active <span class="badge" id="badge-active">â€”</span></div>
-    <div class="tab pending" onclick="switchTab('pending')"><span class="alert-dot amber" id="dot-pending"></span>Pending Dr. Approval <span class="badge" id="badge-pending">â€”</span></div>
-    <div class="tab onhold" onclick="switchTab('onhold')"><span class="alert-dot orange" id="dot-onhold"></span>On Hold <span class="badge" id="badge-onhold">â€”</span></div>
-    <div class="tab shipped" onclick="switchTab('shipped')">Shipped <span class="badge" id="badge-shipped">â€”</span></div>
-    <div class="tab completed" onclick="switchTab('completed')">Completed <span class="badge" id="badge-completed">â€”</span></div>
+    <div class="tab tab-active-tab active" onclick="switchTab('active')">Active <span class="badge" id="badge-active">-</span></div>
+    <div class="tab tab-pending" onclick="switchTab('pending')"><span class="alert-dot amber" id="dot-pending"></span>Pending Dr. Approval <span class="badge" id="badge-pending">-</span></div>
+    <div class="tab tab-onhold" onclick="switchTab('onhold')"><span class="alert-dot orange" id="dot-onhold"></span>On Hold <span class="badge" id="badge-onhold">-</span></div>
+    <div class="tab tab-shipped" onclick="switchTab('shipped')">Shipped <span class="badge" id="badge-shipped">-</span></div>
+    <div class="tab tab-completed" onclick="switchTab('completed')">Completed <span class="badge" id="badge-completed">-</span></div>
   </div>
 
-  <!-- Active Cases -->
   <div class="tab-content active" id="tab-active">
     <div class="loading" id="loading-active">Loading active cases...</div>
-    <table id="table-active" style="display:none;">
-      <thead><tr><th>Order Date</th><th>SO #</th><th>Patient Name</th><th>Expected Ship Date</th></tr></thead>
-      <tbody id="body-active"></tbody>
-    </table>
+    <table id="table-active" style="display:none;"><thead><tr><th>Order Date</th><th>SO #</th><th>Patient Name</th><th>Expected Ship Date</th></tr></thead><tbody id="body-active"></tbody></table>
     <div class="error" id="error-active" style="display:none;"></div>
     <div class="empty" id="empty-active" style="display:none;">No active cases found.</div>
   </div>
-
-  <!-- Pending Approval -->
   <div class="tab-content" id="tab-pending">
     <div class="loading" id="loading-pending">Loading pending cases...</div>
-    <table id="table-pending" style="display:none;">
-      <thead><tr><th>Order Date</th><th>SO #</th><th>Patient Name</th><th>Expected Ship Date</th></tr></thead>
-      <tbody id="body-pending"></tbody>
-    </table>
+    <table id="table-pending" style="display:none;"><thead><tr><th>Order Date</th><th>SO #</th><th>Patient Name</th><th>Expected Ship Date</th></tr></thead><tbody id="body-pending"></tbody></table>
     <div class="error" id="error-pending" style="display:none;"></div>
     <div class="empty" id="empty-pending" style="display:none;">No cases pending approval.</div>
   </div>
-
-  <!-- On Hold -->
   <div class="tab-content" id="tab-onhold">
     <div class="loading" id="loading-onhold">Loading on hold cases...</div>
-    <table id="table-onhold" style="display:none;">
-      <thead><tr><th>Order Date</th><th>SO #</th><th>Patient Name</th><th>Expected Ship Date</th></tr></thead>
-      <tbody id="body-onhold"></tbody>
-    </table>
+    <table id="table-onhold" style="display:none;"><thead><tr><th>Order Date</th><th>SO #</th><th>Patient Name</th><th>Expected Ship Date</th></tr></thead><tbody id="body-onhold"></tbody></table>
     <div class="error" id="error-onhold" style="display:none;"></div>
     <div class="empty" id="empty-onhold" style="display:none;">No cases on hold.</div>
   </div>
-
-  <!-- Shipped -->
   <div class="tab-content" id="tab-shipped">
     <div class="loading" id="loading-shipped">Loading shipped cases...</div>
-    <table id="table-shipped" style="display:none;">
-      <thead><tr><th>Order Date</th><th>SO #</th><th>Patient Name</th><th>Expected Ship Date</th></tr></thead>
-      <tbody id="body-shipped"></tbody>
-    </table>
+    <table id="table-shipped" style="display:none;"><thead><tr><th>Order Date</th><th>SO #</th><th>Patient Name</th><th>Expected Ship Date</th></tr></thead><tbody id="body-shipped"></tbody></table>
     <div class="error" id="error-shipped" style="display:none;"></div>
     <div class="empty" id="empty-shipped" style="display:none;">No shipped cases.</div>
   </div>
-
-  <!-- Completed -->
   <div class="tab-content" id="tab-completed">
     <div class="loading" id="loading-completed">Loading completed cases...</div>
-    <table id="table-completed" style="display:none;">
-      <thead><tr><th>Order Date</th><th>SO #</th><th>Patient Name</th><th>Completed Date</th></tr></thead>
-      <tbody id="body-completed"></tbody>
-    </table>
+    <table id="table-completed" style="display:none;"><thead><tr><th>Order Date</th><th>SO #</th><th>Patient Name</th><th>Completed Date</th></tr></thead><tbody id="body-completed"></tbody></table>
     <div class="error" id="error-completed" style="display:none;"></div>
     <div class="empty" id="empty-completed" style="display:none;">No completed cases found.</div>
   </div>
@@ -156,103 +115,94 @@
   var CURRENT_TAB = "active";
   var LOADED = {};
   var ALL_ROWS = {};
+  var BASE_URL = "https://www.zohoapis.com/creator/custom/3dddsllc/";
 
   var API_MAP = {
-    active:    { api: "Get_Active_Cases",            detail: "Case_Detail" },
-    pending:   { api: "Get_Pending_Approval_Cases",  detail: "Pending_Approval_Detail" },
-    onhold:    { api: "Get_On_Hold_Cases",           detail: "On_Hold_Detail" },
-    shipped:   { api: "Get_Shipped_Cases",           detail: "Case_Detail" },
-    completed: { api: "Get_Completed_Cases",         detail: "Case_Detail" }
+    active:    { api: "Get_Active_Cases",           detail: "Case_Detail" },
+    pending:   { api: "Get_Pending_Approval_Cases", detail: "Pending_Approval_Detail" },
+    onhold:    { api: "Get_On_Hold_Cases",          detail: "On_Hold_Detail" },
+    shipped:   { api: "Get_Shipped_Cases",          detail: "Case_Detail" },
+    completed: { api: "Get_Completed_Cases",        detail: "Case_Detail" }
   };
 
-  function waitForZOHO(callback) {
-    if(typeof ZOHO !== 'undefined' && ZOHO.CREATOR && ZOHO.CREATOR.DATA) {
-      callback();
-    } else {
-      setTimeout(function() { waitForZOHO(callback); }, 100);
+  function callAPI(apiName, method, params) {
+    var url = BASE_URL + apiName;
+    if(params && method === "GET") {
+      var qs = Object.keys(params).map(function(k) { return encodeURIComponent(k) + "=" + encodeURIComponent(params[k]); }).join("&");
+      if(qs) url += "?" + qs;
     }
+    return fetch(url, {
+      method: method || "GET",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" }
+    }).then(function(r) { return r.json(); });
   }
 
-  waitForZOHO(function() {
+  // Try ZOHO SDK first, fall back to fetch
+  function invokeAPI(apiName, method, params, body) {
+    return new Promise(function(resolve, reject) {
+      if(typeof ZOHO !== "undefined" && ZOHO.CREATOR && ZOHO.CREATOR.DATA) {
+        var config = { appName: "doctor-portal", apiName: apiName, httpMethod: method || "GET" };
+        if(params) config.params = params;
+        if(body) config.body = body;
+        ZOHO.CREATOR.DATA.invokeCustomApi(config).then(function(response) {
+          var raw = response && response.result ? response.result : null;
+          if(!raw) { reject("No data"); return; }
+          try { resolve(JSON.parse(raw)); } catch(e) { reject("Parse error"); }
+        }).catch(reject);
+      } else {
+        callAPI(apiName, method, params).then(function(response) {
+          if(response.code === 3000) {
+            var raw = response.result;
+            if(!raw) { reject("No data"); return; }
+            try { resolve(JSON.parse(raw)); } catch(e) { resolve(raw); }
+          } else {
+            reject("API error: " + JSON.stringify(response));
+          }
+        }).catch(reject);
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
     loadTab("active");
-    loadPortalUserInfo();
-    setTimeout(function() { loadTab("pending"); }, 500);
-    setTimeout(function() { loadTab("onhold"); }, 1000);
+    setTimeout(function() { loadTab("pending"); }, 600);
+    setTimeout(function() { loadTab("onhold"); }, 1200);
   });
 
-  function loadPortalUserInfo() {
-    ZOHO.CREATOR.DATA.invokeCustomApi({
-      appName: "doctor-portal",
-      apiName: "Get_Portal_User_Info",
-      httpMethod: "GET"
-    }).then(function(response) {
-      var raw = response && response.result ? response.result : null;
-      if(!raw) return;
-      var data;
-      try { data = JSON.parse(raw); } catch(e) { return; }
-      if(data.practice_name) {
-        document.getElementById("practice-name").textContent = data.practice_name;
-      }
-      if(data.practice_logo_url && data.practice_logo_url !== "") {
-        var logo = document.getElementById("practice-logo");
-        logo.src = data.practice_logo_url;
-        logo.style.display = "block";
-      }
-      // Store role globally for use in row click handlers
-      window.PORTAL_ROLE = data.role || "Staff";
-    }).catch(function() {});
-  }
-
   function switchTab(tab) {
-    // Update tab UI
     document.querySelectorAll(".tab").forEach(function(t) { t.classList.remove("active"); });
     document.querySelectorAll(".tab-content").forEach(function(t) { t.classList.remove("active"); });
-    document.querySelector(".tab[onclick=\"switchTab('" + tab + "')\"]").classList.add("active");
+    var tabEl = document.querySelector(".tab[onclick=\"switchTab('" + tab + "')\"]");
+    if(tabEl) tabEl.classList.add("active");
     document.getElementById("tab-" + tab).classList.add("active");
     CURRENT_TAB = tab;
-
-    // Clear search
     clearSearch();
-
-    // Load data if not already loaded
     if(!LOADED[tab]) { loadTab(tab); }
   }
 
   function loadTab(tab) {
     var apiName = API_MAP[tab].api;
-    ZOHO.CREATOR.DATA.invokeCustomApi({
-      appName: "doctor-portal",
-      apiName: apiName,
-      httpMethod: "GET"
-    }).then(function(response) {
+    invokeAPI(apiName, "GET").then(function(rows) {
       document.getElementById("loading-" + tab).style.display = "none";
-      var raw = response && response.result ? response.result : null;
-      if(!raw) { showTabError(tab, "No data returned."); return; }
-      var rows;
-      try { rows = JSON.parse(raw); } catch(e) { showTabError(tab, "Parse error: " + e.message); return; }
-
       LOADED[tab] = true;
       ALL_ROWS[tab] = rows || [];
-
-      // Update badge count
       var count = rows ? rows.length : 0;
       document.getElementById("badge-" + tab).textContent = count;
-
-      // Show pulsing alert dot for pending and onhold when count > 0
       if(tab === "pending" || tab === "onhold") {
         var dot = document.getElementById("dot-" + tab);
-        if(dot) dot.className = "alert-dot " + (tab === "pending" ? "amber" : "orange") + (count > 0 ? " visible" : "");
+        if(dot && count > 0) dot.className = "alert-dot " + (tab === "pending" ? "amber" : "orange") + " visible";
       }
-
       if(!rows || rows.length === 0) {
         document.getElementById("empty-" + tab).style.display = "block";
-        return;
+      } else {
+        renderRows(tab, rows);
       }
-
-      renderRows(tab, rows);
     }).catch(function(err) {
       document.getElementById("loading-" + tab).style.display = "none";
-      showTabError(tab, "Error loading cases.");
+      var el = document.getElementById("error-" + tab);
+      el.textContent = "Error: " + err;
+      el.style.display = "block";
     });
   }
 
@@ -260,41 +210,36 @@
     var tbody = document.getElementById("body-" + tab);
     tbody.innerHTML = "";
     var detailPage = API_MAP[tab].detail;
-
     rows.forEach(function(row) {
       var tr = document.createElement("tr");
       tr.setAttribute("data-patient", (row.patient_name || "").toLowerCase());
       tr.innerHTML =
         "<td>" + formatDate(row.order_date) + "</td>" +
-        "<td><span class='so-link'>" + (row.salesorder_number || "â€”") + "</span></td>" +
-        "<td><span class='patient-link'>" + (row.patient_name || "â€”") + "</span></td>" +
+        "<td><span class='so-link'>" + (row.salesorder_number || "-") + "</span></td>" +
+        "<td><span class='patient-link'>" + (row.patient_name || "-") + "</span></td>" +
         "<td>" + (row.expected_ship_date ? formatDate(row.expected_ship_date) : "<span class='no-date'>Not set</span>") + "</td>";
-
       tr.addEventListener("click", function() {
-        ZOHO.CREATOR.UTIL.navigateParentURL(
-          "/doctor-portal/" + detailPage + "#salesorder_id=" + row.salesorder_id +
-          "&so_number=" + encodeURIComponent(row.salesorder_number) +
-          "&patient=" + encodeURIComponent(row.patient_name)
-        );
+        var url = "/doctor-portal/" + detailPage + "#salesorder_id=" + row.salesorder_id +
+          "&so_number=" + encodeURIComponent(row.salesorder_number || "") +
+          "&patient=" + encodeURIComponent(row.patient_name || "");
+        if(typeof ZOHO !== "undefined" && ZOHO.CREATOR && ZOHO.CREATOR.UTIL) {
+          ZOHO.CREATOR.UTIL.navigateParentURL(url);
+        } else {
+          window.parent.location.href = url;
+        }
       });
-
       tbody.appendChild(tr);
     });
-
     document.getElementById("table-" + tab).style.display = "table";
   }
 
   function filterRows(query) {
     var tab = CURRENT_TAB;
-    var clear = document.getElementById("search-clear");
-    clear.style.display = query ? "block" : "none";
-
+    document.getElementById("search-clear").style.display = query ? "block" : "none";
     if(!LOADED[tab] || !ALL_ROWS[tab]) return;
-
     var filtered = ALL_ROWS[tab].filter(function(row) {
       return (row.patient_name || "").toLowerCase().indexOf(query.toLowerCase()) !== -1;
     });
-
     document.getElementById("empty-" + tab).style.display = filtered.length === 0 ? "block" : "none";
     document.getElementById("table-" + tab).style.display = filtered.length > 0 ? "table" : "none";
     renderRows(tab, filtered);
@@ -311,14 +256,8 @@
     }
   }
 
-  function showTabError(tab, msg) {
-    var el = document.getElementById("error-" + tab);
-    el.textContent = msg;
-    el.style.display = "block";
-  }
-
   function formatDate(d) {
-    if(!d) return "<span class='no-date'>â€”</span>";
+    if(!d) return "<span class='no-date'>-</span>";
     var parts = d.split("-");
     if(parts.length !== 3) return d;
     var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
