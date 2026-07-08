@@ -146,13 +146,20 @@
         var config = { appName: "doctor-portal", apiName: apiName, httpMethod: method || "GET" };
         if(params) config.params = params;
         if(body) config.body = body;
+        console.log("SDK config:", JSON.stringify(config));
         ZOHO.CREATOR.DATA.invokeCustomApi(config).then(function(response) {
+          console.log("SDK response:", JSON.stringify(response));
           var raw = response && response.result ? response.result : null;
           if(!raw) { reject("No data"); return; }
           try { resolve(JSON.parse(raw)); } catch(e) { reject("Parse error"); }
-        }).catch(reject);
+        }).catch(function(err) {
+          console.log("SDK error:", JSON.stringify(err));
+          reject(JSON.stringify(err));
+        });
       } else {
+        console.log("Using fetch for:", apiName);
         callAPI(apiName, method, params).then(function(response) {
+          console.log("Fetch response:", JSON.stringify(response));
           if(response.code === 3000) {
             var raw = response.result;
             if(!raw) { reject("No data"); return; }
