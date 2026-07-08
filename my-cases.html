@@ -143,9 +143,9 @@
   function invokeAPI(apiName, method, params, body) {
     return new Promise(function(resolve, reject) {
       if(typeof ZOHO !== "undefined" && ZOHO.CREATOR && ZOHO.CREATOR.DATA) {
-        var config = { appName: "doctor-portal", apiName: apiName, httpMethod: method || "GET" };
-        if(params) config.params = params;
-        if(body) config.body = body;
+        var config = { api_name: apiName, http_method: method || "GET" };
+        if(params) config.query_params = params;
+        if(body) config.payload = body;
         console.log("SDK config:", JSON.stringify(config));
         ZOHO.CREATOR.DATA.invokeCustomApi(config).then(function(response) {
           console.log("SDK response:", JSON.stringify(response));
