@@ -149,9 +149,15 @@
         console.log("SDK config:", JSON.stringify(config));
         ZOHO.CREATOR.DATA.invokeCustomApi(config).then(function(response) {
           console.log("SDK response:", JSON.stringify(response));
+          // Show raw response on screen for debugging
+          var el = document.getElementById("error-active");
+          el.textContent = "Raw response: " + JSON.stringify(response);
+          el.style.display = "block";
+          document.getElementById("loading-active").style.display = "none";
+          
           var raw = response && response.result ? response.result : null;
-          if(!raw) { reject("No data"); return; }
-          try { resolve(JSON.parse(raw)); } catch(e) { reject("Parse error"); }
+          if(!raw) { reject("No data - full response: " + JSON.stringify(response)); return; }
+          try { resolve(JSON.parse(raw)); } catch(e) { reject("Parse error: " + e); }
         }).catch(function(err) {
           console.log("SDK error:", JSON.stringify(err));
           reject(JSON.stringify(err));
@@ -173,9 +179,26 @@
   }
 
   document.addEventListener("DOMContentLoaded", function() {
-    loadTab("active");
-    setTimeout(function() { loadTab("pending"); }, 600);
-    setTimeout(function() { loadTab("onhold"); }, 1200);
+    // Wait for ZOHO SDK to be available
+    var attempts = 0;
+    var interval = setInterval(function() {
+      attempts++;
+      if(typeof ZOHO !== "undefined" && ZOHO.CREATOR && ZOHO.CREATOR.DATA) {
+        clearInterval(interval);
+        loadTab("active");
+        setTimeout(function() { loadTab("pending"); }, 600);
+        setTimeout(function() { loadTab("onhold"); }, 1200);
+      } else if(attempts > 50) {
+        // After 5 seconds, give up on SDK and use fetch
+        clearInterval(interval);
+        document.getElementById("error-active").textContent = "SDK timeout after " + attempts + " attempts, using fetch fallback";
+        document.getElementById("error-active").style.display = "block";
+        document.getElementById("loading-active").style.display = "none";
+        loadTab("active");
+        setTimeout(function() { loadTab("pending"); }, 600);
+        setTimeout(function() { loadTab("onhold"); }, 1200);
+      }
+    }, 100);
   });
 
   function switchTab(tab) {
