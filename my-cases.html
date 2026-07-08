@@ -69,6 +69,7 @@
     .error { text-align: center; padding: 40px; color: #dc2626; font-size: 13px; }
     .empty { text-align: center; padding: 40px; color: #888; font-size: 13px; }
   </style>
+<script src="https://js.zohostatic.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
 </head>
 <body>
 
@@ -84,16 +85,16 @@
   <!-- Search -->
   <div class="search-bar">
     <input type="text" class="search-input" id="search-input" placeholder="Search by patient name..." oninput="filterRows(this.value)"/>
-    <button class="search-clear" id="search-clear" onclick="clearSearch()">×</button>
+    <button class="search-clear" id="search-clear" onclick="clearSearch()">Ã—</button>
   </div>
 
   <!-- Tabs -->
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('active')">Active <span class="badge" id="badge-active">—</span></div>
-    <div class="tab pending" onclick="switchTab('pending')"><span class="alert-dot amber" id="dot-pending"></span>Pending Dr. Approval <span class="badge" id="badge-pending">—</span></div>
-    <div class="tab onhold" onclick="switchTab('onhold')"><span class="alert-dot orange" id="dot-onhold"></span>On Hold <span class="badge" id="badge-onhold">—</span></div>
-    <div class="tab shipped" onclick="switchTab('shipped')">Shipped <span class="badge" id="badge-shipped">—</span></div>
-    <div class="tab completed" onclick="switchTab('completed')">Completed <span class="badge" id="badge-completed">—</span></div>
+    <div class="tab active" onclick="switchTab('active')">Active <span class="badge" id="badge-active">â€”</span></div>
+    <div class="tab pending" onclick="switchTab('pending')"><span class="alert-dot amber" id="dot-pending"></span>Pending Dr. Approval <span class="badge" id="badge-pending">â€”</span></div>
+    <div class="tab onhold" onclick="switchTab('onhold')"><span class="alert-dot orange" id="dot-onhold"></span>On Hold <span class="badge" id="badge-onhold">â€”</span></div>
+    <div class="tab shipped" onclick="switchTab('shipped')">Shipped <span class="badge" id="badge-shipped">â€”</span></div>
+    <div class="tab completed" onclick="switchTab('completed')">Completed <span class="badge" id="badge-completed">â€”</span></div>
   </div>
 
   <!-- Active Cases -->
@@ -164,10 +165,17 @@
     completed: { api: "Get_Completed_Cases",         detail: "Case_Detail" }
   };
 
-  ZOHO.CREATOR.init().then(function() {
+  function waitForZOHO(callback) {
+    if(typeof ZOHO !== 'undefined' && ZOHO.CREATOR && ZOHO.CREATOR.DATA) {
+      callback();
+    } else {
+      setTimeout(function() { waitForZOHO(callback); }, 100);
+    }
+  }
+
+  waitForZOHO(function() {
     loadTab("active");
     loadPortalUserInfo();
-    // Load pending and onhold in background so alert dots appear immediately
     setTimeout(function() { loadTab("pending"); }, 500);
     setTimeout(function() { loadTab("onhold"); }, 1000);
   });
@@ -258,8 +266,8 @@
       tr.setAttribute("data-patient", (row.patient_name || "").toLowerCase());
       tr.innerHTML =
         "<td>" + formatDate(row.order_date) + "</td>" +
-        "<td><span class='so-link'>" + (row.salesorder_number || "—") + "</span></td>" +
-        "<td><span class='patient-link'>" + (row.patient_name || "—") + "</span></td>" +
+        "<td><span class='so-link'>" + (row.salesorder_number || "â€”") + "</span></td>" +
+        "<td><span class='patient-link'>" + (row.patient_name || "â€”") + "</span></td>" +
         "<td>" + (row.expected_ship_date ? formatDate(row.expected_ship_date) : "<span class='no-date'>Not set</span>") + "</td>";
 
       tr.addEventListener("click", function() {
@@ -310,7 +318,7 @@
   }
 
   function formatDate(d) {
-    if(!d) return "<span class='no-date'>—</span>";
+    if(!d) return "<span class='no-date'>â€”</span>";
     var parts = d.split("-");
     if(parts.length !== 3) return d;
     var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
