@@ -209,7 +209,8 @@
     }).catch(function(err) {
       document.getElementById("loading-" + tab).style.display = "none";
       var el = document.getElementById("error-" + tab);
-      el.textContent = "Error: " + err;
+      var errMsg = typeof err === "object" ? JSON.stringify(err) : String(err);
+      el.textContent = "Error: " + errMsg + " | ZOHO available: " + (typeof ZOHO !== "undefined") + " | SDK: " + (typeof ZOHO !== "undefined" && !!ZOHO.CREATOR);
       el.style.display = "block";
     });
   }
