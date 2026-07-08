@@ -105,6 +105,7 @@
     #error-msg { text-align: center; padding: 40px; color: var(--red); }
     #main-content { display: none; }
   </style>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
 </head>
 <body>
 
@@ -114,7 +115,7 @@
 <div id="main-content">
   <div class="page-header">
     <img src="https://3ddds.net/wp-content/uploads/2026/02/site-logo-sm.png" alt="3D DDS Logo"/>
-    <button class="back-btn" onclick="goBack()">← My Cases</button>
+    <button class="back-btn" onclick="goBack()">â† My Cases</button>
     <div class="header-info">
       <h1 id="h-patient-name">Loading...</h1>
       <p id="h-so-number"></p>
@@ -124,15 +125,15 @@
   <div class="status-bar">
     <div class="status-item">
       <label>Order Date</label>
-      <span id="s-order-date">—</span>
+      <span id="s-order-date">â€”</span>
     </div>
     <div class="status-item">
       <label>Case Status</label>
-      <span id="s-case-status">—</span>
+      <span id="s-case-status">â€”</span>
     </div>
     <div class="status-item">
       <label>Expected Ship Date</label>
-      <span id="s-ship-date">—</span>
+      <span id="s-ship-date">â€”</span>
     </div>
   </div>
 
@@ -140,7 +141,7 @@
 
     <!-- Hold Prompt -->
     <div class="hold-prompt">
-      <h3>⏸ This Case is Currently On Hold</h3>
+      <h3>â¸ This Case is Currently On Hold</h3>
       <p>Your case has been placed on hold because additional information or clarification is needed. Please review the message from our team below, then either approve us to proceed with the current design or submit additional details and files to help us move forward. Our team will be notified immediately upon your response.</p>
       <div id="hold-reason-box" style="display:none; margin-top:14px; background:white; border:1px solid #fed7aa; border-radius:8px; padding:14px 16px;">
         <div style="font-size:11px; color:#ea580c; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Message from 3D DDS:</div>
@@ -150,7 +151,7 @@
 
     <!-- Response Options -->
     <div class="card">
-      <div class="card-header">📋 Your Response</div>
+      <div class="card-header">ðŸ“‹ Your Response</div>
       <div class="card-body">
         <div id="response-form">
           <div class="approval-section">
@@ -159,14 +160,14 @@
               <label class="checkbox-option" id="proceed-option" onclick="selectOption('proceed')">
                 <input type="checkbox" id="proceed-checkbox"/>
                 <div class="option-text">
-                  <h4>✅ Proceed As Is</h4>
+                  <h4>âœ… Proceed As Is</h4>
                   <p>I am satisfied with the current design. Please proceed with production as designed.</p>
                 </div>
               </label>
               <label class="checkbox-option" id="details-option" onclick="selectOption('submit_details')">
                 <input type="checkbox" id="details-checkbox"/>
                 <div class="option-text">
-                  <h4>📎 Submit Additional Details</h4>
+                  <h4>ðŸ“Ž Submit Additional Details</h4>
                   <p>I have additional information, photos, or files that will help clarify what is needed.</p>
                 </div>
               </label>
@@ -176,10 +177,10 @@
           <!-- Additional details section -->
           <div class="details-section" id="details-section">
             <h4>Please provide your additional details:</h4>
-            <textarea class="details-textarea" id="additional-notes" placeholder="Please be as detailed as possible — include any specific instructions, measurements, shade preferences, or other information that will help us complete your case correctly..."></textarea>
+            <textarea class="details-textarea" id="additional-notes" placeholder="Please be as detailed as possible â€” include any specific instructions, measurements, shade preferences, or other information that will help us complete your case correctly..."></textarea>
             <div style="margin-top:12px;">
               <button onclick="openUpload()" id="upload-btn" style="background:#ffedd5;color:#ea580c;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;width:100%;">
-                📎 Upload Photos or Files to Case Folder
+                ðŸ“Ž Upload Photos or Files to Case Folder
               </button>
               <div id="upload-loading" style="display:none;font-size:12px;color:#888;margin-top:8px;text-align:center;">Getting upload link...</div>
               <div id="upload-error" style="display:none;font-size:12px;color:#dc2626;margin-top:8px;"></div>
@@ -192,17 +193,17 @@
         </div>
 
         <div class="success-overlay" id="success-overlay">
-          <div class="icon" id="success-icon">✅</div>
+          <div class="icon" id="success-icon">âœ…</div>
           <h2 id="success-title" style="color: var(--green);">Response Submitted</h2>
           <p id="success-message">Thank you. Our team has been notified.</p>
-          <button onclick="goBack()">← Return to My Cases</button>
+          <button onclick="goBack()">â† Return to My Cases</button>
         </div>
       </div>
     </div>
 
     <!-- Item Table -->
     <div class="card">
-      <div class="card-header">📋 Order Items</div>
+      <div class="card-header">ðŸ“‹ Order Items</div>
       <div class="card-body" style="padding:0;">
         <table class="item-table">
           <thead>
@@ -221,7 +222,7 @@
 
     <!-- Case Notes -->
     <div class="card">
-      <div class="card-header">💬 Case Notes</div>
+      <div class="card-header">ðŸ’¬ Case Notes</div>
       <div class="card-body">
         <div class="chat-window" id="chat-window"></div>
         <div class="chat-input-row">
@@ -239,7 +240,15 @@
   var CASE_DATA = {};
   var SELECTED_ACTION = "";
 
-  ZOHO.CREATOR.init().then(function() {
+  function waitForZOHO(callback) {
+    if(typeof ZOHO !== 'undefined' && ZOHO.CREATOR && ZOHO.CREATOR.DATA) {
+      callback();
+    } else {
+      setTimeout(function() { waitForZOHO(callback); }, 100);
+    }
+  }
+
+  waitForZOHO(function() {
     var hash = window.location.hash.replace("#","");
     var params = {};
     hash.split("&").forEach(function(p) {
@@ -272,7 +281,7 @@
     document.getElementById("h-patient-name").textContent = data.patient_name || "Unknown Patient";
     document.getElementById("h-so-number").textContent = data.salesorder_number || "";
     document.getElementById("s-order-date").textContent = formatDate(data.order_date);
-    document.getElementById("s-case-status").innerHTML = '<span class="status-badge">' + (data.case_status || "—") + '</span>';
+    document.getElementById("s-case-status").innerHTML = '<span class="status-badge">' + (data.case_status || "â€”") + '</span>';
     document.getElementById("s-ship-date").textContent = data.expected_ship_date ? formatDate(data.expected_ship_date) : "Not set";
 
     var items = [];
@@ -284,9 +293,9 @@
       items.forEach(function(item) {
         var tr = document.createElement("tr");
         tr.innerHTML =
-          "<td><strong>" + (item.name || "—") + "</strong></td>" +
-          "<td>" + (item.tooth_arch || "—") + "</td>" +
-          "<td>" + (item.shade || "—") + "</td>" +
+          "<td><strong>" + (item.name || "â€”") + "</strong></td>" +
+          "<td>" + (item.tooth_arch || "â€”") + "</td>" +
+          "<td>" + (item.shade || "â€”") + "</td>" +
           "<td>" + (item.quantity || "1") + "</td>" +
           "<td>$" + parseFloat(item.rate || 0).toFixed(2) + "</td>";
         tbody.appendChild(tr);
@@ -326,7 +335,7 @@
       detailsOption.className = "checkbox-option";
       detailsSection.style.display = "none";
       submitBtn.className = "submit-btn proceed";
-      submitBtn.textContent = "✅ Confirm — Proceed As Is";
+      submitBtn.textContent = "âœ… Confirm â€” Proceed As Is";
       submitBtn.disabled = false;
     } else {
       detailsBox.checked = true;
@@ -335,7 +344,7 @@
       proceedOption.className = "checkbox-option";
       detailsSection.style.display = "block";
       submitBtn.className = "submit-btn details";
-      submitBtn.textContent = "📎 Submit Additional Details";
+      submitBtn.textContent = "ðŸ“Ž Submit Additional Details";
       submitBtn.disabled = false;
     }
   }
@@ -377,12 +386,12 @@
         var overlay = document.getElementById("success-overlay");
         overlay.style.display = "block";
         if(SELECTED_ACTION === "proceed") {
-          document.getElementById("success-icon").textContent = "✅";
+          document.getElementById("success-icon").textContent = "âœ…";
           document.getElementById("success-title").textContent = "Response Received!";
           document.getElementById("success-title").style.color = "var(--green)";
           document.getElementById("success-message").textContent = "Thank you. Your case has been moved back into production. Our team has been notified and will proceed as designed.";
         } else {
-          document.getElementById("success-icon").textContent = "📎";
+          document.getElementById("success-icon").textContent = "ðŸ“Ž";
           document.getElementById("success-title").textContent = "Details Submitted";
           document.getElementById("success-title").style.color = "var(--orange)";
           document.getElementById("success-message").textContent = "Thank you for submitting additional details. Our team will review your notes and files and will be in touch shortly with next steps.";
@@ -390,7 +399,7 @@
       } else {
         alert("Error: " + (result.error || "Unknown error. Please try again."));
         btn.disabled = false;
-        btn.textContent = SELECTED_ACTION === "proceed" ? "✅ Confirm — Proceed As Is" : "📎 Submit Additional Details";
+        btn.textContent = SELECTED_ACTION === "proceed" ? "âœ… Confirm â€” Proceed As Is" : "ðŸ“Ž Submit Additional Details";
       }
     }).catch(function(err) {
       alert("Error: " + JSON.stringify(err));
@@ -413,7 +422,7 @@
       if(match) {
         var div = document.createElement("div");
         div.className = "chat-msg " + (match[2] === "Doctor" ? "doctor" : "staff");
-        div.innerHTML = '<div>' + escHtml(match[3]) + '</div><div class="meta">' + match[2] + ' · ' + match[1] + '</div>';
+        div.innerHTML = '<div>' + escHtml(match[3]) + '</div><div class="meta">' + match[2] + ' Â· ' + match[1] + '</div>';
         window_el.appendChild(div);
       } else {
         var div = document.createElement("div");
@@ -492,7 +501,7 @@
   }
 
   function formatDate(d) {
-    if(!d) return "—";
+    if(!d) return "â€”";
     var parts = d.split("-");
     if(parts.length !== 3) return d;
     var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
