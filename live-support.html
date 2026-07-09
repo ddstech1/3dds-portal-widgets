@@ -64,6 +64,10 @@
       background: #10b981;
       animation: pulse 2s infinite;
     }
+    .status-dot.offline {
+      background: #9ca3af;
+      animation: none;
+    }
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.4; }
@@ -154,12 +158,10 @@
       box-shadow: 0 1px 4px rgba(0,0,0,0.07);
       padding: 20px;
       margin-top: 0;
+      text-align: center;
     }
     .assist-card h2 { font-size: 15px; font-weight: 700; color: var(--brand-blue); margin-bottom: 6px; }
     .assist-card p { font-size: 13px; color: var(--text-mid); margin-bottom: 14px; }
-    .assist-wrap { position: relative; width: 100%; height: 115px; overflow: hidden; border-radius: 8px; border: 1px solid var(--border); }
-    .assist-wrap iframe { width: 100%; height: 150px; border: none; }
-    .assist-mask { position: absolute; bottom: 0; left: 0; right: 0; height: 32px; background: white; }
     .divider {
       display: flex;
       align-items: center;
@@ -203,8 +205,8 @@
 
   <!-- Status bar -->
   <div class="status-bar">
-    <div class="status-dot"></div>
-    <span>Support agents are online</span>
+    <div class="status-dot" id="status-dot"></div>
+    <span id="status-text">Checking support hours...</span>
   </div>
 
   <div class="content">
@@ -269,14 +271,13 @@
       </div>
     </div>
 
-    <!-- Remote Support Session -->
+    <!-- Remote Support via Chat -->
     <div class="assist-card">
-      <h2>🖥️ Remote Support Session</h2>
-      <p>If you have been provided a Support Session ID by a 3D DDS technician, enter it below to start your remote support session.</p>
-      <div class="assist-wrap">
-        <iframe src="https://assist.3ddds.net/login/embed-remote-support.jsp"></iframe>
-        <div class="assist-mask"></div>
-      </div>
+      <h2>🖥️ Need a Screen Share?</h2>
+      <p>Start a chat below. If your technician needs to view your screen to help troubleshoot, they'll send a one-click screen share link directly inside the chat — no downloads or session IDs to enter.</p>
+      <button class="chat-btn" onclick="openChat()">
+        💬 Chat with Us
+      </button>
     </div>
 
   </div>
@@ -286,6 +287,41 @@
   <script id="zsiqscript" src="https://salesiq.zohopublic.com/widget?wc=siq30c58bbf62c9ca61479198e1484fc8236ec6bb92a7e78d25e9884c783740fa76" defer></script>
 
   <script>
+    function updateSupportStatus() {
+      var etParts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/New_York",
+        weekday: "short",
+        hour: "numeric",
+        hour12: false
+      }).formatToParts(new Date());
+
+      var weekday, hour;
+      etParts.forEach(function(p) {
+        if(p.type === "weekday") weekday = p.value;
+        if(p.type === "hour") hour = parseInt(p.value, 10);
+      });
+
+      // Mon-Thu 9:00-17:00 ET, Fri 9:00-13:00 ET
+      var isOpen = false;
+      if(["Mon","Tue","Wed","Thu"].indexOf(weekday) !== -1) {
+        isOpen = hour >= 9 && hour < 17;
+      } else if(weekday === "Fri") {
+        isOpen = hour >= 9 && hour < 13;
+      }
+
+      var dot = document.getElementById("status-dot");
+      var text = document.getElementById("status-text");
+      if(isOpen) {
+        dot.classList.remove("offline");
+        text.textContent = "Support agents are online";
+      } else {
+        dot.classList.add("offline");
+        text.textContent = "Currently offline — leave a message and we'll respond next business day";
+      }
+    }
+    updateSupportStatus();
+    setInterval(updateSupportStatus, 60000);
+
     function openChat() {
       // Open SalesIQ chat window programmatically
       if(window.$zoho && window.$zoho.salesiq) {
