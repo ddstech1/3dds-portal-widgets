@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Live Support</title>
+  <script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
   <style>
     :root {
       --brand-blue: #1e3a5f;
@@ -260,7 +261,7 @@
     <!-- Chat prompt -->
     <div class="chat-prompt">
       <h2>Start a Live Chat</h2>
-      <p>Click below to open the chat window and connect with our team.</p>
+      <p>Click below to chat with our team. If it helps to troubleshoot, your technician can send a one-click link right inside the chat — to view your screen, or to see what you're looking at through your phone's camera. No downloads or session IDs to enter.</p>
       <button class="chat-btn" onclick="openChat()">
         💬 Chat with Us
       </button>
@@ -269,15 +270,6 @@
         <span>📞 Call us at</span>
         <a href="tel:+18553550533">(855) 355-0533</a>
       </div>
-    </div>
-
-    <!-- Remote Support via Chat -->
-    <div class="assist-card">
-      <h2>🖥️ Need a Screen Share?</h2>
-      <p>Start a chat below. If your technician needs to view your screen to help troubleshoot, they'll send a one-click screen share link directly inside the chat — no downloads or session IDs to enter.</p>
-      <button class="chat-btn" onclick="openChat()">
-        💬 Chat with Us
-      </button>
     </div>
 
   </div>
@@ -329,17 +321,42 @@
       }
     }
 
-    // Auto-show chat after 3 seconds if agents are online
+    // Identify the visitor to SalesIQ using the logged-in doctor's actual info,
+    // so technicians see the practice name instead of an anonymous visitor
+    function invokeAPI(apiName, method, params) {
+      return new Promise(function(resolve, reject) {
+        var config = { api_name: apiName, http_method: method || "GET" };
+        if(params) config.query_params = params;
+        ZOHO.CREATOR.DATA.invokeCustomApi(config).then(function(response) {
+          var raw = response && response.result ? response.result : null;
+          if(!raw || raw === "") { resolve({}); return; }
+          try { resolve(JSON.parse(raw)); } catch(e) { reject("Parse error: " + e); }
+        }).catch(function(err) { reject(JSON.stringify(err)); });
+      });
+    }
+
+    function waitForZOHO(callback) {
+      if(typeof ZOHO !== "undefined" && ZOHO.CREATOR && ZOHO.CREATOR.DATA) {
+        callback();
+      } else {
+        setTimeout(function() { waitForZOHO(callback); }, 100);
+      }
+    }
+
+    function identifyVisitor() {
+      waitForZOHO(function() {
+        invokeAPI("Get_Portal_User_Info", "GET").then(function(data) {
+          if(!window.$zoho || !window.$zoho.salesiq) return;
+          if(data && data.practice_name) { $zoho.salesiq.visitor.name(data.practice_name); }
+          if(data && data.email) { $zoho.salesiq.visitor.email(data.email); }
+        }).catch(function() {});
+      });
+    }
+
     window.$zoho = window.$zoho || {};
     $zoho.salesiq = $zoho.salesiq || {ready: function(){}};
     $zoho.salesiq.ready = function() {
-      // Pre-fill visitor info if available from URL params
-      var params = {};
-      window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
-        params[key] = decodeURIComponent(value);
-      });
-      if(params.name) { $zoho.salesiq.visitor.name(params.name); }
-      if(params.email) { $zoho.salesiq.visitor.email(params.email); }
+      identifyVisitor();
     };
   </script>
 
