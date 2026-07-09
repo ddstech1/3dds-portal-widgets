@@ -261,7 +261,7 @@
     <!-- Chat prompt -->
     <div class="chat-prompt">
       <h2>Start a Live Chat</h2>
-      <p>Click below to chat with our team. If it helps to troubleshoot, your technician can send a one-click link right inside the chat — to view your screen, or to see what you're looking at through your phone's camera. No downloads or session IDs to enter.</p>
+      <p>Click below to chat with our team about any question — case status, shipping, or general support.</p>
       <button class="chat-btn" onclick="openChat()">
         💬 Chat with Us
       </button>
@@ -270,6 +270,15 @@
         <span>📞 Call us at</span>
         <a href="tel:+18553550533">(855) 355-0533</a>
       </div>
+    </div>
+
+    <!-- Share Live Video -->
+    <div class="assist-card">
+      <h2>📹 Share Live Video</h2>
+      <p>Need to show us something in person or have a patient in the chair you want to discuss? Start a chat and our team will send you a link to share live video from your phone's camera, so we can see exactly what you're seeing.</p>
+      <button class="chat-btn" onclick="requestLensSession()">
+        📹 Share Live Video
+      </button>
     </div>
 
   </div>
@@ -318,6 +327,15 @@
       // Open SalesIQ chat window programmatically
       if(window.$zoho && window.$zoho.salesiq) {
         $zoho.salesiq.floatwindow.visible("show");
+      }
+    }
+
+    function requestLensSession() {
+      // Opens chat pre-tagged so the technician knows to start a Lens video session
+      if(window.$zoho && window.$zoho.salesiq) {
+        $zoho.salesiq.chat.start();
+        $zoho.salesiq.floatwindow.visible("show");
+        $zoho.salesiq.visitor.question("I'd like to share live video from my phone with your team.");
       }
     }
 
