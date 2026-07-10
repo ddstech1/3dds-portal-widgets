@@ -333,7 +333,7 @@
     var items = [];
     try { items = JSON.parse(data.line_items); } catch(e) {}
     var tbody = document.getElementById("item-table-body");
-    var isAccountHolder = window.PORTAL_ROLE === "Account Holder";
+    var isAccountHolder = window.PORTAL_ROLE === "Practice Admin";
 
     // Hide Rate column for Staff
     if(!isAccountHolder) {
@@ -369,13 +369,13 @@
     }
 
     // Invoice PDF â€” Account Holder only, Completed cases with PDF link
-    if(data.case_status === "Completed" && data.invoice_pdf && data.invoice_pdf !== "" && window.PORTAL_ROLE === "Account Holder") {
+    if(data.case_status === "Completed" && data.invoice_pdf && data.invoice_pdf !== "" && window.PORTAL_ROLE === "Practice Admin") {
       document.getElementById("invoice-card").style.display = "block";
       document.getElementById("invoice-link").href = data.invoice_pdf;
     }
 
     // Remake button â€” Account Holder only, Completed, has returnable items, within 60 days
-    if(data.case_status === "Completed" && data.has_returnable_items === "true" && window.PORTAL_ROLE === "Account Holder" && data.invoice_date && data.invoice_date !== "") {
+    if(data.case_status === "Completed" && data.has_returnable_items === "true" && window.PORTAL_ROLE === "Practice Admin" && data.invoice_date && data.invoice_date !== "") {
       var invoiceParts = data.invoice_date.split("-");
       var invoiceDate = new Date(parseInt(invoiceParts[0]), parseInt(invoiceParts[1])-1, parseInt(invoiceParts[2]));
       var today = new Date();
